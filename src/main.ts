@@ -10,10 +10,15 @@ app.use(router);
 
 app.mount("#app");
 
+
+
 import { BoardCreator } from "./engine/board-creator";
-import { Mankala } from './engine/mankala';
-import { Player, PlayerIdentifier } from "./engine/player";
+import { Mancala } from './engine/mancala';
+import { PlayerIdentifier } from "./engine/player";
+import { AiLevel, AiPlayer } from "./engine/ai-player";
 
 const boardConfig = new BoardCreator().create(6, 4);
 const boardLength = boardConfig.length;
-new Mankala(new Player(PlayerIdentifier.BOTTOM, boardLength), new Player(PlayerIdentifier.TOP, boardLength), boardConfig)
+const mancala = new Mancala(new AiPlayer(PlayerIdentifier.BOTTOM, boardLength, AiLevel.BEGINNER),
+    new AiPlayer(PlayerIdentifier.TOP, boardLength, AiLevel.BEGINNER), boardConfig)
+mancala.update()

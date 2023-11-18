@@ -1,4 +1,4 @@
-import type { BoardConfig } from "./mankala";
+import type { BoardConfig } from "./mancala";
 
 export class BoardPrinter {
     private readonly emptySpaceGap: string;
