@@ -1,7 +1,8 @@
 import type { BoardConfig } from "./mancala";
 import { Player, PlayerIdentifier } from "./player";
 
-export enum AiLevel {
+export enum PlayerLevel {
+    HUMAN = -1,
     BEGINNER = 0,
     MEDIUM = 5,
     HARD = 10,
@@ -9,9 +10,9 @@ export enum AiLevel {
 }
 
 export class AiPlayer extends Player {
-    private readonly depth: AiLevel;
+    private readonly depth: PlayerLevel;
 
-    public constructor(identifier: PlayerIdentifier, boardLength: number, level: AiLevel) {
+    public constructor(identifier: PlayerIdentifier, boardLength: number, level: PlayerLevel) {
         super(identifier, boardLength);
         this.depth = level;
     }
