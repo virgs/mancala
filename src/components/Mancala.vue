@@ -1,20 +1,24 @@
 <template>
   <div class="container-lg text-center">
-    <div class="row g-1 h-100">
-      <div class="col">
-        <Hole :stones="6" :owner="PlayerIdentifier.TOP"></Hole>
-      </div>
-      <div class="col-8">
-        <div v-for="row in 2" class="row g-0 justify-content-center" style="height: 50%;">
-          <div v-for="pocket in 6" class="col mx-auto">
-            <Hole :stones="pocket" :owner="row === 1 ? PlayerIdentifier.TOP : PlayerIdentifier.BOTTOM"></Hole>
+    <img src="@/assets/wooden-square-plank.png" class="img-fluid w-100" alt="wooden-square-plank">
+    <div class="container-fluid px-5" style="position: absolute; top: 0%; left: 0; height: -webkit-fill-available;">
+      <div class="row g-2 h-100">
+        <div class="col">
+          <Hole :stones="6" :owner="PlayerIdentifier.TOP"></Hole>
+        </div>
+        <div class="col-8">
+          <div v-for="row in 2" class="row g-0 justify-content-center" style="height: 50%;">
+            <div v-for="pocket in 6" class="col mx-auto">
+              <Hole :stones="pocket" :owner="row === 1 ? PlayerIdentifier.TOP : PlayerIdentifier.BOTTOM"></Hole>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="col">
-        <Hole :stones="6" :owner="PlayerIdentifier.BOTTOM"></Hole>
+        <div class="col">
+          <Hole :stones="6" :owner="PlayerIdentifier.BOTTOM"></Hole>
+        </div>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -40,21 +44,6 @@ mancala.update()
 
 <style scoped>
 .container-lg {
-  transform: rotate3d(1, 0, 0, 25deg);
-  border-bottom: 15px solid;
-  border-color: #221201;
-  border-radius: 10px;
-
-  min-height: 50vh;
-  height: 500px;
-  max-height: 100vh;
-  background-image: url('@/assets/wood-pattern.svg');
-  /* The image used */
-  background-position: center;
-  /* Center the image */
-  background-repeat: no-repeat;
-  /* Do not repeat the image */
-  background-size: cover;
-  /* Resize the background image to cover the entire container */
+  transform: rotate3d(0, 0, 0, 25deg); /* Why is it necessary? */
 }
 </style>

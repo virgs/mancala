@@ -15,8 +15,19 @@ const props = defineProps<{
   owner: PlayerIdentifier
 }>();
 
+const generateBorderRadius = () => ((Math.random() * 20) + 25) + '%';
+
+const borders = {
+  'border-bottom-left-radius': generateBorderRadius(),
+  'border-top-left-radius': generateBorderRadius(),
+  'border-bottom-right-radius': generateBorderRadius(),
+  'border-top-right-radius': generateBorderRadius()
+}
+
+
 const styleObject = reactive({
-  'box-shadow': 'inset -10px -20px 18px' + props.owner === PlayerIdentifier.BOTTOM ? 'darkred' : 'darkblue'
+  ...borders,
+  'border-color': props.owner === PlayerIdentifier.BOTTOM ? 'darkred' : 'darkblue'
 })
 
 </script>
@@ -24,21 +35,16 @@ const styleObject = reactive({
 
 <style scoped>
 .hole {
-  transform: translateY(50%);
-  height: 50%;
-  width: 90%;
-  background-color: #6b451c;
-  border-radius: 50%;
-  border: 5px solid;
-  border-color: #6b451c;
+  transform: translateY(70%);
+  height: 40%;
+  width: 75%;
+  background-color: #6f3e1c;
+  border: 3px solid;
   display: inline-block;
-  box-shadow: inset -10px -20px 18px darkblue;
+  box-shadow: inset 7px 7px 0px #b97731;
+}
 
-  background-image: linear-gradient(rgb(50, 1, 1), rgb(0, 0, 0)), url('@/assets/wood-pattern.svg');
-  background-blend-mode: soft-light;
-
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
+.hole:hover {
+  border: 10px solid;
 }
 </style>
