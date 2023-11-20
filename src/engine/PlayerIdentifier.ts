@@ -1,5 +1,4 @@
-
 export enum PlayerIdentifier {
-    TOP = 'TOP',
-    BOTTOM = 'BOTTOM'
+  TOP = "TOP",
+  BOTTOM = "BOTTOM",
 }

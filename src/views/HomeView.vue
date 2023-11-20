@@ -1,6 +1,9 @@
 <template>
   <main>
-    <MancalaView :top-player="BrainLevel.BEGINNER" :bottom-player="BrainLevel.HUMAN" />
+    <MancalaView
+      :top-player-brain-level="BrainLevel.BEGINNER"
+      :bottom-player-brain-level="BrainLevel.HUMAN"
+    />
   </main>
 </template>
 
