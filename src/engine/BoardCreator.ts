@@ -1,7 +1,7 @@
 export class BoardCreator {
     public create(internalPockets: number, initialStones: number): number[] {
         const pockets: number[] = [];
-        let counter = 0;
+        // let counter = 0;
         Array.from(Array(2).keys())
             .forEach(() => {
                 Array.from(Array(internalPockets))

@@ -1,4 +1,4 @@
-import type { BoardConfig } from "./mancala";
+import type { BoardConfig } from "./Mancala";
 
 export class BoardPrinter {
     private readonly emptySpaceGap: string;
@@ -10,11 +10,10 @@ export class BoardPrinter {
     }
 
     public print(pockets: BoardConfig): void {
-        const topPlayerPockets = pockets.filter((_pocket, index) => index >= pockets.length / 2)
-        const topPlayerInternalPocket = topPlayerPockets.filter((_pocket, index) => index < topPlayerPockets.length - 1)
-        const bottomPlayerPockets = pockets.filter((_pocket, index) => index < pockets.length / 2)
+        const topPlayerPockets = pockets.filter((_pocket, index) => index < pockets.length / 2)
+        const topPlayerInternalPocket = topPlayerPockets.filter((_pocket, index) => index < topPlayerPockets.length -1)
+        const bottomPlayerPockets = pockets.filter((_pocket, index) => index >= pockets.length / 2)
         const bottomPlayerInternalPocket = bottomPlayerPockets.filter((_pocket, index) => index < bottomPlayerPockets.length - 1)
-        // console.log(pockets)
 
         console.log(this.emptySpaceGap + topPlayerInternalPocket
             .reverse()
