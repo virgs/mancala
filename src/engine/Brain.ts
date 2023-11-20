@@ -21,8 +21,10 @@ export class Brain {
     // this.depth = level;
   }
 
-  public selectNextMove(board: BoardConfig): number {
+  public async selectNextMove(board: BoardConfig): Promise<number> {
     console.log('thinking')
+    await new Promise<void>(resolve => setTimeout(() => resolve(), 1000))
+    console.log('done thinking')
     const availablePlays = new BoardPlayer(
       this.identifier,
       board.length,

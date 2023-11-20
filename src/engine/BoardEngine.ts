@@ -145,43 +145,32 @@ export class BoardEngine {
     playingPlayer: BoardPlayer,
     oppositePlayer: BoardPlayer,
   ): ActionResult {
+    const newBoard = [...board]
+    const playingPlayerStore = playingPlayer.getPlayerStorePocketIndex();
+    const oppositePlayerStore = oppositePlayer.getPlayerStorePocketIndex();
+
     const playingPlayerAvailablePlays = playingPlayer.getAvailablePlays(board);
-    const stonesInPlayingPlayerSide = playingPlayerAvailablePlays.reduce(
-      (acc, item) => {
-        this.lastMovesRecord?.push({ index: item, newStonesAmouns: 0 });
-        return acc + board[item];
-      },
-      board[playingPlayer.getPlayerStorePocketIndex()],
-    );
+    playingPlayerAvailablePlays
+      .forEach(index => {
+        this.lastMovesRecord?.push({ index: index, newStonesAmouns: 0 });
+        this.lastMovesRecord?.push({ index: playingPlayerStore, newStonesAmouns: newBoard[playingPlayerStore] + newBoard[index] });
+        newBoard[playingPlayerStore] += newBoard[index];
+        newBoard[index] = 0;
+      });
 
-    const oppositePlayerAvailablePlays =
-      oppositePlayer.getAvailablePlays(board);
-    const stonesInOppositePlayerSide = oppositePlayerAvailablePlays.reduce(
-      (acc, item) => {
-        this.lastMovesRecord?.push({ index: item, newStonesAmouns: 0 });
-        return acc + board[item];
-      },
-      board[oppositePlayer.getPlayerStorePocketIndex()],
-    );
+    const oppositePlayerAvailablePlays = oppositePlayer.getAvailablePlays(board);
+    oppositePlayerAvailablePlays
+      .forEach(index => {
+        this.lastMovesRecord?.push({ index: index, newStonesAmouns: 0 });
+        this.lastMovesRecord?.push({ index: oppositePlayerStore, newStonesAmouns: newBoard[oppositePlayerStore] + newBoard[index] });
+        newBoard[oppositePlayerStore] += newBoard[index];
+        newBoard[index] = 0;
+      });
 
-    const newBoard = Array.from(Array(board.length)).map(() => 0);
-
-    newBoard[playingPlayer.getPlayerStorePocketIndex()] =
-      stonesInPlayingPlayerSide;
-    this.lastMovesRecord?.push({
-      index: playingPlayer.getPlayerStorePocketIndex(),
-      newStonesAmouns: stonesInPlayingPlayerSide,
-    });
-    newBoard[oppositePlayer.getPlayerStorePocketIndex()] =
-      stonesInOppositePlayerSide;
-    this.lastMovesRecord?.push({
-      index: oppositePlayer.getPlayerStorePocketIndex(),
-      newStonesAmouns: stonesInOppositePlayerSide,
-    });
     let winningPlayer: PlayerIdentifier | undefined; //DRAW
-    if (stonesInPlayingPlayerSide > stonesInOppositePlayerSide) {
+    if (newBoard[playingPlayerStore] > newBoard[oppositePlayerStore]) {
       winningPlayer = playingPlayer.identifier;
-    } else if (stonesInPlayingPlayerSide < stonesInOppositePlayerSide) {
+    } else if (newBoard[playingPlayerStore] < newBoard[oppositePlayerStore]) {
       winningPlayer = oppositePlayer.identifier;
     }
 

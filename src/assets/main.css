@@ -10,3 +10,18 @@ main {
   height: 100vh;
   width: 100vw;
 }
+
+.hole {
+  text-shadow: 2px 2px black;
+  border-radius: 15%;
+  font-family: var(--game-font-family);
+  font-size: 1.5rem;
+  font-weight: bolder;
+  transform: translateY(70%);
+  height: 40%;
+  width: 75%;
+  background-color: var(--wooden-shade);
+  border: 3px solid;
+  display: block;
+  transition: 200ms ease all;
+}

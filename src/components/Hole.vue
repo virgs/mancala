@@ -9,7 +9,7 @@
 <script setup lang="ts">
 import { BrainLevel } from "@/engine/Brain";
 import { PlayerIdentifier } from "@/engine/PlayerIdentifier";
-import { computed, reactive, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 const emit = defineEmits(["nextActionSelected"]);
 
 const props = defineProps<{
@@ -18,7 +18,7 @@ const props = defineProps<{
   owner: PlayerIdentifier;
   ownerBrain?: BrainLevel;
   stones: number;
-  playingPlayerIdentifier: PlayerIdentifier;
+  playingPlayerIdentifier: PlayerIdentifier | undefined;
 }>();
 
 const generateBorderRadius = () => Math.random() * 25 + 25 + "%";
@@ -36,9 +36,11 @@ const availableActionOption = ref(detectAvailableOption());
 
 function click() {
   if (!props.store) {
-    if (props.stones > 0) {
-      if (props.owner === props.playingPlayerIdentifier) {
-        emit("nextActionSelected", props.owner, props.index);
+    if (props.ownerBrain === BrainLevel.HUMAN) {
+      if (props.stones > 0) {
+        if (props.owner === props.playingPlayerIdentifier) {
+          emit("nextActionSelected", props.owner, props.index);
+        }
       }
     }
   }
@@ -62,7 +64,7 @@ watch(
 
 function detectAvailableOption() {
   return (
-    props.ownerBrain === BrainLevel.HUMAN && 
+    props.ownerBrain === BrainLevel.HUMAN &&
     props.stones > 0 &&
     props.owner === props.playingPlayerIdentifier &&
     !props.store
@@ -86,33 +88,32 @@ const holeClass = computed(() => ({
   hovered: mouseIsOver.value && availableActionOption.value,
 }));
 
-const holeStyle = computed(() => ({
-  ...borders,
-  "border-color": props.owner === PlayerIdentifier.BOTTOM ? "darkred" : "darkblue",
-}));
+const holeStyle = computed(() => {
+  const playerColor = props.owner === PlayerIdentifier.BOTTOM ? 'var(--bottom-player-color)' : 'var(--top-player-color)';
+  return {
+    ...borders,
+    'border-color': playerColor,
+    'box-shadow': 'inset 7px 7px 0px var(--wooden-half-shade), 1px 1px 10px ' + playerColor,
+    'padding-top': props.store ? '20%' : '5%'
+  }
+});
 </script>
 
 <style scoped>
-.hole {
-  transform: translateY(70%);
-  height: 40%;
-  width: 75%;
-  background-color: #6f3e1c;
-  border: 3px solid;
-  display: inline-block;
-  box-shadow: inset 7px 7px 0px #b97731;
-}
-
 .availableOption {
-  border-color: rgb(237, 233, 31) !important;
+  /* border-color: var(--hihglighted-number-color) !important; */
+  outline: var(--hihglighted-number-color);
+  box-shadow: inset 7px 7px 0px var(--wooden-half-shade), 1px 1px 5px var(--hihglighted-number-color) !important;
   cursor: pointer;
 }
 
 .hovered {
   border: 5px solid;
+  box-shadow: inset 7px 7px 0px var(--wooden-half-shade), 1px 1px 20px var(--hihglighted-number-color) !important;
 }
 
 .stonesNumberChangedAnimation {
-  font-size: larger;
+  color: var(--hihglighted-number-color);
+  font-size: 2rem;
 }
 </style>
