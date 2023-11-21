@@ -7,30 +7,30 @@
     <div class="container-fluid px-5" style="position: absolute; top: 0; left: 0; height: 100%">
       <div class="row g-2 h-100">
         <div class="col">
-          <Hole :stones="board[6]" :index="6" :playingPlayerIdentifier="playingPlayer?.identifier" :store="true"
-            :ownerBrain="topPlayer.brainLevel" @nextActionSelected="nextActionSelected" :owner="PlayerIdentifier.TOP">
+          <Hole :stones="board[6]" :index="6" :playingPlayerSide="playingPlayer?.side" :store="true"
+            :ownerPlayerType="topPlayer.brain.type" @nextActionSelected="nextActionSelected" :side="PlayerSide.TOP">
           </Hole>
         </div>
         <div class="col-8">
           <div class="row g-0 justify-content-center" style="height: 50%">
             <div v-for="(pocket, index) in topInternalPockets" class="col mx-auto">
               <Hole :stones="pocket" :index="topInternalPockets.length - 1 - index" :store="false"
-                :ownerBrain="topPlayer.brainLevel" @nextActionSelected="nextActionSelected"
-                :playingPlayerIdentifier="playingPlayer?.identifier" :owner="PlayerIdentifier.TOP"></Hole>
+                :ownerPlayerType="topPlayer.brain.type" @nextActionSelected="nextActionSelected"
+                :playingPlayerSide="playingPlayer?.side" :side="PlayerSide.TOP"></Hole>
             </div>
           </div>
           <div class="row g-0 justify-content-center" style="height: 50%">
             <div v-for="(pocket, index) in bottomInternalPockets" class="col mx-auto">
               <Hole :stones="pocket" :index="index + bottomInternalPockets.length + 1"
-                :ownerBrain="bottomPlayer.brainLevel" :playingPlayerIdentifier="playingPlayer?.identifier" :store="false"
-                @nextActionSelected="nextActionSelected" :owner="PlayerIdentifier.BOTTOM"></Hole>
+                :ownerPlayerType="bottomPlayer.brain.type" :playingPlayerSide="playingPlayer?.side" :store="false"
+                @nextActionSelected="nextActionSelected" :side="PlayerSide.BOTTOM"></Hole>
             </div>
           </div>
         </div>
         <div class="col">
-          <Hole :stones="board[13]" :index="13" :playingPlayerIdentifier="playingPlayer?.identifier" :store="true"
-            :ownerBrain="bottomPlayer.brainLevel" @nextActionSelected="nextActionSelected"
-            :owner="PlayerIdentifier.BOTTOM"></Hole>
+          <Hole :stones="board[13]" :index="13" :playingPlayerSide="playingPlayer?.side" :store="true"
+            :ownerPlayerType="bottomPlayer.brain.type" @nextActionSelected="nextActionSelected" :side="PlayerSide.BOTTOM">
+          </Hole>
         </div>
       </div>
     </div>
@@ -40,8 +40,9 @@
 <script lang="ts">
 import { createBoard } from '@/engine/BoardConfig'
 import { BoardEngine, type Action } from '@/engine/BoardEngine'
-import { Brain, BrainLevel } from '@/engine/Brain'
-import { PlayerIdentifier } from '@/engine/PlayerIdentifier'
+import { PlayerSide } from '@/engine/PlayerSide'
+import { Player } from '@/engine/player/Player'
+import { PlayerType } from '@/engine/player/PlayerType'
 import Hole from './Hole.vue'
 
 let engine: BoardEngine
@@ -54,20 +55,13 @@ export default {
   },
   setup() {
     return {
-      PlayerIdentifier,
+      PlayerSide
     }
   },
   data() {
-    const board = createBoard(this.gameSettings.internalPockets, this.gameSettings.initialStones)
-    const topPlayer = new Brain(
-      this.gameSettings.topPlayerBrainLevel,
-      PlayerIdentifier.TOP,
-      board.length
-    )
-    const bottomPlayer = new Brain(
-      this.gameSettings.bottomPlayerBrainLevel,
-      PlayerIdentifier.BOTTOM,
-      board.length
+    const board = createBoard(
+      this.gameSettings.internalPockets,
+      this.gameSettings.initialStones
     )
     engine = new BoardEngine(board, {
       debug: true,
@@ -80,13 +74,13 @@ export default {
       aiIsThinking: false,
       animationRunning: false,
       board: board,
-      playingPlayer: topPlayer as Brain | undefined,
-      topPlayer: topPlayer as Brain,
-      bottomPlayer: bottomPlayer as Brain,
+      playingPlayer: this.gameSettings.topPlayer as Player | undefined,
+      topPlayer: this.gameSettings.topPlayer as Player,
+      bottomPlayer: this.gameSettings.bottomPlayer as Player,
     }
   },
   mounted() {
-    if (this.playingPlayer?.brainLevel !== BrainLevel.HUMAN) {
+    if (this.playingPlayer?.brain.type !== PlayerType.HUMAN) {
       this.aiThinkAboutNextMove()
     }
   },
@@ -121,25 +115,29 @@ export default {
       const nextMoveIndex = await this.playingPlayer!.selectNextMove(this.board)
       this.aiIsThinking = false
       console.log('AI has selected move', nextMoveIndex)
-      this.nextActionSelected(this.playingPlayer!.identifier, nextMoveIndex)
+      this.updateBoard({
+        player: this.playingPlayer!.side,
+        pocketId: nextMoveIndex,
+      })
+
     },
     sleep(sleepTime: number) {
       return new Promise<void>((resolve) => setTimeout(() => resolve(), sleepTime))
     },
-    nextActionSelected(playerIdentifier: PlayerIdentifier, pocketId: number) {
+    nextActionSelected(playerSide: PlayerSide, pocketId: number) {
       if (!this.animationRunning) {
         this.updateBoard({
-          player: playerIdentifier,
+          player: playerSide,
           pocketId: pocketId,
         })
       }
     },
     async updateBoard(nextAction: Action) {
       switch (nextAction.player) {
-        case PlayerIdentifier.TOP:
+        case PlayerSide.TOP:
           this.accumulatorColor = 'var(--top-player-color)'
           break
-        case PlayerIdentifier.BOTTOM:
+        case PlayerSide.BOTTOM:
           this.accumulatorColor = 'var(--bottom-player-color)'
           break
       }
@@ -157,17 +155,17 @@ export default {
       if (result.gameOver) {
         console.log('Player ' + result.winningPlayer + ' won')
       } else {
-        this.playingPlayer = this.getBrainFromIdentifier(result.nextTurnPlayer!)
-        if (this.playingPlayer?.brainLevel !== BrainLevel.HUMAN) {
+        this.playingPlayer = this.getBrainFromSide(result.nextTurnPlayer!)
+        if (this.playingPlayer?.brain.type !== PlayerType.HUMAN) {
           this.aiThinkAboutNextMove()
         }
       }
     },
-    getBrainFromIdentifier(identifier: PlayerIdentifier): Brain {
-      if (this.topPlayer.identifier === identifier) {
-        return this.topPlayer as Brain
+    getBrainFromSide(side: PlayerSide): Player {
+      if (this.topPlayer.side === side) {
+        return this.topPlayer as Player
       } else {
-        return this.bottomPlayer as Brain
+        return this.bottomPlayer as Player
       }
     },
   },
@@ -202,4 +200,3 @@ export default {
   width: 10%;
 }
 </style>
-@/engine/BoardStateAnalyser

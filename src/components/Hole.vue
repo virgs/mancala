@@ -7,18 +7,18 @@
 </template>
 
 <script setup lang="ts">
-import { BrainLevel } from '@/engine/Brain'
-import { PlayerIdentifier } from '@/engine/PlayerIdentifier'
+import { PlayerSide } from '@/engine/PlayerSide';
+import { PlayerType } from '@/engine/player/PlayerType';
 import { computed, ref, watch } from 'vue'
 const emit = defineEmits(['nextActionSelected'])
 
 const props = defineProps<{
     index: number
     store: boolean
-    owner: PlayerIdentifier
-    ownerBrain?: BrainLevel
+    side: PlayerSide
+    ownerPlayerType?: PlayerType
     stones: number
-    playingPlayerIdentifier: PlayerIdentifier | undefined
+    playingPlayerSide: PlayerSide | undefined
 }>()
 
 const generateBorderRadius = () => Math.random() * 25 + 25 + '%'
@@ -36,10 +36,10 @@ const availableActionOption = ref(detectAvailableOption())
 
 function click() {
     if (!props.store) {
-        if (props.ownerBrain === BrainLevel.HUMAN) {
+        if (props.ownerPlayerType === PlayerType.HUMAN) {
             if (props.stones > 0) {
-                if (props.owner === props.playingPlayerIdentifier) {
-                    emit('nextActionSelected', props.owner, props.index)
+                if (props.side === props.playingPlayerSide) {
+                    // emit('nextActionSelected', props.side, props.index)
                 }
             }
         }
@@ -47,7 +47,7 @@ function click() {
 }
 
 watch(
-    () => props.playingPlayerIdentifier,
+    () => props.playingPlayerSide,
     () => {
         availableActionOption.value = detectAvailableOption()
     }
@@ -64,9 +64,9 @@ watch(
 
 function detectAvailableOption() {
     return (
-        props.ownerBrain === BrainLevel.HUMAN &&
+        props.ownerPlayerType === PlayerType.HUMAN &&
         props.stones > 0 &&
-        props.owner === props.playingPlayerIdentifier &&
+        props.side === props.playingPlayerSide &&
         !props.store
     )
 }
@@ -90,7 +90,7 @@ const holeClass = computed(() => ({
 
 const holeStyle = computed(() => {
     const playerColor =
-        props.owner === PlayerIdentifier.BOTTOM
+        props.side === PlayerSide.BOTTOM
             ? 'var(--bottom-player-color)'
             : 'var(--top-player-color)'
     return {

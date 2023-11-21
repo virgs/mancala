@@ -1,37 +1,37 @@
-import type { BoardConfig } from './BoardConfig'
-import { BoardEngine } from './BoardEngine'
-import { BrainLevel } from './Brain'
-import { DynamicBoardAnalyser } from './DynamicBoardAnalyser'
-import type { PlayerIdentifier } from './PlayerIdentifier'
+import type { BoardConfig } from '../BoardConfig'
+import { BoardEngine } from '../BoardEngine'
+import { DynamicBoardAnalyser } from '../DynamicBoardAnalyser'
+import type { PlayerSide } from '../PlayerSide'
+import { AiBrainLevel } from './AiBrainLevel'
 
 export class Minimax {
     private readonly maxDepth: number
-    private readonly identifier: PlayerIdentifier
+    private readonly identifier: PlayerSide
     private readonly engine: BoardEngine
     private playsAnalysed: number
     private aborted: boolean
 
     public constructor(
-        brainLevel: BrainLevel,
-        playerIdentifier: PlayerIdentifier,
+        aiBainLevel: AiBrainLevel,
+        playerSide: PlayerSide,
         board: BoardConfig
     ) {
         this.aborted = false
         this.playsAnalysed = 0
         this.engine = new BoardEngine(board)
-        this.identifier = playerIdentifier
+        this.identifier = playerSide
         this.maxDepth = 0
-        switch (brainLevel) {
-            case BrainLevel.BEGINNER:
+        switch (aiBainLevel) {
+            case AiBrainLevel.BEGINNER:
                 this.maxDepth = 0
                 break
-            case BrainLevel.MEDIUM:
+            case AiBrainLevel.MEDIUM:
                 this.maxDepth = 5
                 break
-            case BrainLevel.HARD:
+            case AiBrainLevel.HARD:
                 this.maxDepth = 9
                 break
-            case BrainLevel.HARDCORE:
+            case AiBrainLevel.HARDCORE:
                 this.maxDepth = 50
                 break
         }
@@ -83,28 +83,28 @@ export class Minimax {
     private evaluate(
         boardConfig: BoardConfig,
         depth: number,
-        playingPlayer: PlayerIdentifier
+        playingPlayerSide: PlayerSide
     ): number {
         ++this.playsAnalysed
         const board = new DynamicBoardAnalyser(boardConfig)
-        const availablePlays = board.getAvailablePlaysForPlayer(playingPlayer)
+        const availablePlays = board.getAvailablePlaysForPlayer(playingPlayerSide)
 
         const gameOver = board.isGameOver()
         // if (this.aborted) {
         //     return -1;
         // }
         if (gameOver) {
-            return gameOver === playingPlayer ? 100 : -100
+            return gameOver === playingPlayerSide ? 100 : -100
         }
-        if (depth <= 0 || gameOver === playingPlayer || availablePlays.length === 1) {
-            return board.checkPartialResultsForPlayer(playingPlayer)
+        if (depth <= 0 || gameOver === playingPlayerSide || availablePlays.length === 1) {
+            return board.checkPartialResultsForPlayer(playingPlayerSide)
         }
 
-        if (playingPlayer !== this.identifier) {
+        if (playingPlayerSide !== this.identifier) {
             // Minimizing
             const worstValue = availablePlays.reduce((acc, index) => {
                 const result = this.engine.makeMove(
-                    { player: playingPlayer, pocketId: index },
+                    { player: playingPlayerSide, pocketId: index },
                     boardConfig
                 )
                 return Math.min(
@@ -117,7 +117,7 @@ export class Minimax {
             // if (playingPlayer === this.identifier)  // Maximizing
             const bestValue = availablePlays.reduce((acc, index) => {
                 const result = this.engine.makeMove(
-                    { player: playingPlayer, pocketId: index },
+                    { player: playingPlayerSide, pocketId: index },
                     boardConfig
                 )
                 return Math.max(

@@ -1,5 +1,5 @@
 import type { BoardConfig } from './BoardConfig'
-import { PlayerIdentifier } from './PlayerIdentifier'
+import { PlayerSide } from './PlayerSide'
 
 export class StaticBoardAnalyser {
     readonly boardLength: number
@@ -10,8 +10,8 @@ export class StaticBoardAnalyser {
         this.totalStones = board.reduce((acc, stones) => acc + stones, 0)
     }
 
-    public getPlayerStorePocketIndex(playerIdentifier: PlayerIdentifier): number {
-        return playerIdentifier === PlayerIdentifier.TOP
+    public getPlayerStorePocketIndex(playerIdentifier: PlayerSide): number {
+        return playerIdentifier === PlayerSide.TOP
             ? this.boardLength / 2 - 1
             : this.boardLength - 1
     }
@@ -20,11 +20,11 @@ export class StaticBoardAnalyser {
         return pocketId === this.boardLength / 2 - 1 || pocketId === this.boardLength - 1
     }
 
-    public checkPocketOwnership(identifier: PlayerIdentifier, pocketId: number): boolean {
-        if (identifier === PlayerIdentifier.TOP && pocketId < this.boardLength / 2) {
+    public checkPocketOwnership(identifier: PlayerSide, pocketId: number): boolean {
+        if (identifier === PlayerSide.TOP && pocketId < this.boardLength / 2) {
             return true
         }
-        if (identifier === PlayerIdentifier.BOTTOM && pocketId >= this.boardLength / 2) {
+        if (identifier === PlayerSide.BOTTOM && pocketId >= this.boardLength / 2) {
             return true
         }
         return false

@@ -1,10 +1,10 @@
-import type { BrainLevel } from './Brain'
 import { Minimax } from './Minimax'
-import type { PlayerIdentifier } from './PlayerIdentifier'
+import type { AiBrainLevel } from './AiBrainLevel'
+import type { PlayerSide } from '../PlayerSide'
 
 export type SolverWorkerRequest = {
-    playingPlayer: PlayerIdentifier
-    brainLevel: BrainLevel
+    playingPlayer: PlayerSide
+    brainLevel: AiBrainLevel
     boardConfig: string
     abort?: boolean
 }

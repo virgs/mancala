@@ -1,4 +1,4 @@
-import type { BoardConfig } from './DynamicBoardAnalyser'
+import type { BoardConfig } from "./BoardConfig";
 
 export class BoardPrinter {
     private readonly emptySpaceGap: string
@@ -21,10 +21,10 @@ export class BoardPrinter {
 
         console.log(
             this.emptySpaceGap +
-                topPlayerInternalPocket
-                    .reverse()
-                    .map((stones, index) => this.printHole(stones, pockets.length - index - 2))
-                    .join(this.emptySpaceGap)
+            topPlayerInternalPocket
+                .reverse()
+                .map((stones, index) => this.printHole(stones, pockets.length - index - 2))
+                .join(this.emptySpaceGap)
         )
 
         console.log(
@@ -44,9 +44,9 @@ export class BoardPrinter {
 
         console.log(
             this.emptySpaceGap +
-                bottomPlayerInternalPocket
-                    .map((stones, index) => this.printHole(stones, index))
-                    .join(this.emptySpaceGap)
+            bottomPlayerInternalPocket
+                .map((stones, index) => this.printHole(stones, index))
+                .join(this.emptySpaceGap)
         )
     }
 

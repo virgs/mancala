@@ -1,5 +1,5 @@
 import type { BoardConfig } from './BoardConfig'
-import { PlayerIdentifier } from './PlayerIdentifier'
+import { PlayerSide } from './PlayerSide'
 import { StaticBoardAnalyser } from './StaticBoardAnalyser'
 
 export class DynamicBoardAnalyser {
@@ -11,30 +11,30 @@ export class DynamicBoardAnalyser {
         this.boardConfig = [...board]
     }
 
-    public isGameOver(): PlayerIdentifier | undefined {
+    public isGameOver(): PlayerSide | undefined {
         if (
-            this.getAvailablePlaysForPlayer(PlayerIdentifier.TOP).length > 0 ||
-            this.getAvailablePlaysForPlayer(PlayerIdentifier.BOTTOM).length > 0
+            this.getAvailablePlaysForPlayer(PlayerSide.TOP).length > 0 ||
+            this.getAvailablePlaysForPlayer(PlayerSide.BOTTOM).length > 0
         ) {
             return undefined
         }
-        return this.checkPartialResultsForPlayer(PlayerIdentifier.TOP)
-            ? PlayerIdentifier.TOP
-            : PlayerIdentifier.BOTTOM
+        return this.checkPartialResultsForPlayer(PlayerSide.TOP)
+            ? PlayerSide.TOP
+            : PlayerSide.BOTTOM
     }
 
-    public checkPartialResultsForPlayer(playerIdentifier: PlayerIdentifier) {
+    public checkPartialResultsForPlayer(playerIdentifier: PlayerSide) {
         const topPlayerResult =
             this.boardConfig[
-                this.staticBoardAnalyser.getPlayerStorePocketIndex(PlayerIdentifier.TOP)
+            this.staticBoardAnalyser.getPlayerStorePocketIndex(PlayerSide.TOP)
             ] -
             this.boardConfig[
-                this.staticBoardAnalyser.getPlayerStorePocketIndex(PlayerIdentifier.BOTTOM)
+            this.staticBoardAnalyser.getPlayerStorePocketIndex(PlayerSide.BOTTOM)
             ]
-        return playerIdentifier === PlayerIdentifier.TOP ? topPlayerResult : -topPlayerResult
+        return playerIdentifier === PlayerSide.TOP ? topPlayerResult : -topPlayerResult
     }
 
-    public getAvailablePlaysForPlayer(playerIdentifier: PlayerIdentifier): number[] {
+    public getAvailablePlaysForPlayer(playerIdentifier: PlayerSide): number[] {
         return this.boardConfig.reduce((acc, stones, pocketId) => {
             if (
                 this.staticBoardAnalyser.checkPocketOwnership(playerIdentifier, pocketId) &&
