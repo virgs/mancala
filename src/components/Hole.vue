@@ -1,14 +1,20 @@
 <template>
     <div style="width: 100%; height: 100%; position: relative">
-        <span :class="holeClass" :style="holeStyle" @mouseenter="mouseOver" @mouseleave="mouseLeft" @click="click">
+        <span
+            :class="holeClass"
+            :style="holeStyle"
+            @mouseenter="mouseOver"
+            @mouseleave="mouseLeft"
+            @click="click"
+        >
             {{ stones }}
         </span>
     </div>
 </template>
 
 <script setup lang="ts">
-import { PlayerSide } from '@/engine/PlayerSide';
-import { PlayerType } from '@/engine/player/PlayerType';
+import { PlayerSide } from '@/engine/PlayerSide'
+import { PlayerType } from '@/engine/player/PlayerType'
 import { computed, ref, watch } from 'vue'
 const emit = defineEmits(['nextActionSelected'])
 
@@ -39,7 +45,7 @@ function click() {
         if (props.ownerPlayerType === PlayerType.HUMAN) {
             if (props.stones > 0) {
                 if (props.side === props.playingPlayerSide) {
-                    // emit('nextActionSelected', props.side, props.index)
+                    emit('nextActionSelected', props.side, props.index)
                 }
             }
         }
@@ -90,9 +96,7 @@ const holeClass = computed(() => ({
 
 const holeStyle = computed(() => {
     const playerColor =
-        props.side === PlayerSide.BOTTOM
-            ? 'var(--bottom-player-color)'
-            : 'var(--top-player-color)'
+        props.side === PlayerSide.BOTTOM ? 'var(--bottom-player-color)' : 'var(--top-player-color)'
     return {
         ...borders,
         'border-color': playerColor,

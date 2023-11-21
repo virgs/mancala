@@ -3,26 +3,33 @@ import { DynamicBoardAnalyser } from './DynamicBoardAnalyser'
 import { PlayerSide, getOppositePlayerSide } from './PlayerSide'
 import { StaticBoardAnalyser } from './StaticBoardAnalyser'
 
-export interface Action {
+export interface Move {
   player: PlayerSide
   pocketId: number
 }
 
-export interface ActionResult {
+export interface MoveResult {
   boardConfig: BoardConfig
   gameOver: boolean
   nextTurnPlayer: PlayerSide
   winningPlayer?: PlayerSide
-  movesRecord?: MovesRecord[]
+  movesRecord?: MoveRecord[]
 }
 
-export class InvalidAction extends Error {
+export interface GameOverResult {
+  boardConfig: BoardConfig
+  gameOver: boolean
+  winningPlayer?: PlayerSide
+  movesRecord: MoveRecord[]
+}
+
+export class InvalidMove extends Error {
   constructor(message: string) {
     super(message)
   }
 }
 
-interface MovesRecord {
+interface MoveRecord {
   index: number
   newStonesAmouns: number
 }
@@ -30,71 +37,94 @@ interface MovesRecord {
 export class BoardEngine {
   private readonly staticBoardAnalyser: StaticBoardAnalyser
   private readonly debug: boolean
-  private readonly lastMovesRecord?: MovesRecord[]
+  private readonly recordMoves: boolean
 
   public constructor(board: BoardConfig, config?: { debug?: boolean; recordMoves?: boolean }) {
     this.staticBoardAnalyser = new StaticBoardAnalyser(board)
     this.debug = config?.debug || false
-    this.lastMovesRecord = config?.recordMoves ? [] : undefined
+    this.recordMoves = config?.recordMoves || false
   }
 
-  public makeMove(action: Action, boardConfig: BoardConfig): ActionResult {
-    this.lastMovesRecord?.splice(0, this.lastMovesRecord.length)
+  public makeMove(move: Move, boardConfig: BoardConfig): MoveResult {
     if (this.debug) {
-      console.log(`Player '${action.player}' selected pocket (${action.pocketId})`)
+      console.log(`Player '${move.player}' selected pocket (${move.pocketId})`)
     }
-    this.validateAction(action, boardConfig)
+    this.validateMove(move, boardConfig)
 
-    const { currentPocketId, boardAfterRedistribution } = this.redistributeStones(
-      action,
+    const { redistributionMovesRecord, currentPocketId, boardAfterRedistribution } = this.redistributeStones(
+      move,
       boardConfig
     )
 
-    const { nextPlayerTurn, boardAfterCapture } = this.checkCapture(
-      action.player,
+    const playingPlayer = move.player
+
+    const { captureMovesRecord, boardAfterCapture } = this.checkCapture(
+      playingPlayer,
       currentPocketId,
       boardAfterRedistribution
     )
 
-    const gameOver = this.checkGameOver(action.player, boardAfterCapture)
-    if (gameOver) {
-      return gameOver
+    const gameOverResult = this.checkGameOver(playingPlayer, boardAfterCapture)
+    if (gameOverResult.gameOver) {
+      return {
+        nextTurnPlayer: playingPlayer, //non-important
+        boardConfig: gameOverResult.boardConfig,
+        gameOver: true,
+        movesRecord: this.recordMoves ? redistributionMovesRecord
+          .concat(captureMovesRecord)
+          .concat(gameOverResult.movesRecord) : undefined,
+      }
     } else {
+      const nextPlayerTurn = this.checkNextPlayerTurn(playingPlayer, currentPocketId)
+
       return {
         nextTurnPlayer: nextPlayerTurn,
         boardConfig: boardAfterCapture,
         gameOver: false,
-        movesRecord: this.lastMovesRecord,
+        movesRecord: this.recordMoves ? redistributionMovesRecord
+          .concat(captureMovesRecord) : undefined,
       }
     }
   }
 
-  private redistributeStones(action: Action, board: number[]) {
+  private redistributeStones(move: Move, board: number[]) {
     const newBoard = [...board]
-    let currentPocketId = action.pocketId
-    let remainingStones = newBoard[action.pocketId]
+    let currentPocketId = move.pocketId
+    let remainingStones = newBoard[move.pocketId]
     newBoard[currentPocketId] = 0
-    this.lastMovesRecord?.push({
+    const redistributionMovesRecord = [{
       index: currentPocketId,
       newStonesAmouns: 0,
-    })
+    }]
 
     while (remainingStones > 0) {
       currentPocketId = this.staticBoardAnalyser.getNextPocketId(currentPocketId)
       if (
         this.staticBoardAnalyser.isPocketStore(currentPocketId) &&
-        !this.staticBoardAnalyser.checkPocketOwnership(action.player, currentPocketId)
+        !this.staticBoardAnalyser.checkPocketOwnership(move.player, currentPocketId)
       ) {
         continue
       }
       ++newBoard[currentPocketId]
-      this.lastMovesRecord?.push({
+      redistributionMovesRecord.push({
         index: currentPocketId,
         newStonesAmouns: newBoard[currentPocketId],
       })
       --remainingStones
     }
-    return { currentPocketId, boardAfterRedistribution: newBoard }
+    return { redistributionMovesRecord, currentPocketId, boardAfterRedistribution: newBoard }
+  }
+
+  private checkNextPlayerTurn(
+    playingPlayer: PlayerSide,
+    currentPocketId: number,
+  ): PlayerSide {
+    if (this.staticBoardAnalyser.checkPocketOwnership(playingPlayer, currentPocketId)) {
+      if (this.staticBoardAnalyser.isPocketStore(currentPocketId)) {
+        return playingPlayer
+      }
+    }
+    return getOppositePlayerSide(playingPlayer)
   }
 
   private checkCapture(
@@ -103,14 +133,11 @@ export class BoardEngine {
     board: number[]
   ) {
     const newBoard = [...board]
-    let nextPlayerTurn = getOppositePlayerSide(playingPlayer)
+    const captureMovesRecord = [];
     if (this.staticBoardAnalyser.checkPocketOwnership(playingPlayer, currentPocketId)) {
-      if (this.staticBoardAnalyser.isPocketStore(currentPocketId)) {
-        nextPlayerTurn = playingPlayer
-      } else {
+      if (!this.staticBoardAnalyser.isPocketStore(currentPocketId)) {
         if (newBoard[currentPocketId] === 1) {
-          const oppositeSitePocketId =
-            this.staticBoardAnalyser.getOppositeSidePocketId(currentPocketId)
+          const oppositeSitePocketId = this.staticBoardAnalyser.getOppositeSidePocketId(currentPocketId)
           if (this.debug) {
             console.log(
               `Player '${playingPlayer}' move ended on empty pocket (${currentPocketId})\nCapturing pocket (${oppositeSitePocketId}) with ${newBoard[oppositeSitePocketId]} stones`
@@ -118,12 +145,12 @@ export class BoardEngine {
           }
           const capturedStones = newBoard[oppositeSitePocketId]
           newBoard[oppositeSitePocketId] = 0
-          this.lastMovesRecord?.push({
+          captureMovesRecord.push({
             index: oppositeSitePocketId,
             newStonesAmouns: 0,
           })
           newBoard[currentPocketId] += capturedStones
-          this.lastMovesRecord?.push({
+          captureMovesRecord.push({
             index: currentPocketId,
             newStonesAmouns: newBoard[currentPocketId],
           })
@@ -131,25 +158,25 @@ export class BoardEngine {
       }
     }
     return {
-      nextPlayerTurn,
+      captureMovesRecord,
       boardAfterCapture: newBoard,
     }
   }
 
-  private validateAction(action: Action, newBoard: number[]) {
-    if (!this.staticBoardAnalyser.checkPocketOwnership(action.player, action.pocketId)) {
-      throw new InvalidAction(
-        `Player '${action.player}' cannot select an opponent's pocket (${action.pocketId})`
+  private validateMove(move: Move, newBoard: number[]) {
+    if (!this.staticBoardAnalyser.checkPocketOwnership(move.player, move.pocketId)) {
+      throw new InvalidMove(
+        `Player '${move.player}' cannot select an opponent's pocket (${move.pocketId})`
       )
     }
-    if (this.staticBoardAnalyser.isPocketStore(action.pocketId)) {
-      throw new InvalidAction(
-        `Player '${action.player}' cannot select a store (${action.pocketId})`
+    if (this.staticBoardAnalyser.isPocketStore(move.pocketId)) {
+      throw new InvalidMove(
+        `Player '${move.player}' cannot select a store (${move.pocketId})`
       )
     }
-    if (newBoard[action.pocketId] === 0) {
-      throw new InvalidAction(
-        `Player '${action.player}' cannot select an empty pocket (${action.pocketId})`
+    if (newBoard[move.pocketId] === 0) {
+      throw new InvalidMove(
+        `Player '${move.player}' cannot select an empty pocket (${move.pocketId})`
       )
     }
   }
@@ -157,37 +184,33 @@ export class BoardEngine {
   private checkGameOver(
     playingPlayer: PlayerSide,
     board: number[]
-  ): ActionResult | undefined {
+  ): GameOverResult {
     const dynamicBoardAnalyser = new DynamicBoardAnalyser(board)
     if (!dynamicBoardAnalyser.isGameOver()) {
-      return undefined
+      return {
+        boardConfig: board,
+        winningPlayer: undefined,
+        gameOver: false,
+        movesRecord: []
+      }
     }
+    const gameOverMovesRecord: MoveRecord[] = []
     const opponentPlayer = getOppositePlayerSide(playingPlayer)
 
     const playingPlayerStore = this.staticBoardAnalyser.getPlayerStorePocketIndex(playingPlayer)
-    const opponentPlayerStore =
-      this.staticBoardAnalyser.getPlayerStorePocketIndex(opponentPlayer)
-
-    const playingPlayerAvailablePlays =
-      dynamicBoardAnalyser.getAvailablePlaysForPlayer(playingPlayer)
+    const playingPlayerAvailablePlays = dynamicBoardAnalyser.getAvailableMovesForPlayer(playingPlayer)
     playingPlayerAvailablePlays.forEach((index) => {
-      this.lastMovesRecord?.push({ index: index, newStonesAmouns: 0 })
-      this.lastMovesRecord?.push({
-        index: playingPlayerStore,
-        newStonesAmouns: board[playingPlayerStore] + board[index],
-      })
+      gameOverMovesRecord.push({ index: index, newStonesAmouns: 0 })
+      gameOverMovesRecord.push({ index: playingPlayerStore, newStonesAmouns: board[playingPlayerStore] + board[index] })
       board[playingPlayerStore] += board[index]
       board[index] = 0
     })
 
-    const opponentPlayerAvailablePlays =
-      dynamicBoardAnalyser.getAvailablePlaysForPlayer(opponentPlayer)
+    const opponentPlayerStore = this.staticBoardAnalyser.getPlayerStorePocketIndex(opponentPlayer)
+    const opponentPlayerAvailablePlays = dynamicBoardAnalyser.getAvailableMovesForPlayer(opponentPlayer)
     opponentPlayerAvailablePlays.forEach((index) => {
-      this.lastMovesRecord?.push({ index: index, newStonesAmouns: 0 })
-      this.lastMovesRecord?.push({
-        index: opponentPlayerStore,
-        newStonesAmouns: board[opponentPlayerStore] + board[index],
-      })
+      gameOverMovesRecord.push({ index: index, newStonesAmouns: 0 })
+      gameOverMovesRecord.push({ index: opponentPlayerStore, newStonesAmouns: board[opponentPlayerStore] + board[index] })
       board[opponentPlayerStore] += board[index]
       board[index] = 0
     })
@@ -201,10 +224,9 @@ export class BoardEngine {
 
     return {
       gameOver: true,
-      nextTurnPlayer: PlayerSide.BOTTOM, // non-important
+      movesRecord: gameOverMovesRecord,
       boardConfig: board,
-      winningPlayer: winningPlayer,
-      movesRecord: this.lastMovesRecord,
+      winningPlayer: winningPlayer
     }
   }
 }

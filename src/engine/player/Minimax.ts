@@ -11,11 +11,7 @@ export class Minimax {
     private playsAnalysed: number
     private aborted: boolean
 
-    public constructor(
-        aiBainLevel: AiBrainLevel,
-        playerSide: PlayerSide,
-        board: BoardConfig
-    ) {
+    public constructor(aiBainLevel: AiBrainLevel, playerSide: PlayerSide, board: BoardConfig) {
         this.aborted = false
         this.playsAnalysed = 0
         this.engine = new BoardEngine(board)
@@ -46,27 +42,27 @@ export class Minimax {
         console.log('thinking')
 
         const board = new DynamicBoardAnalyser(boardConfig)
-        const availablePlays = board.getAvailablePlaysForPlayer(this.identifier)
-        let choosenActionIndex = availablePlays[Math.floor(Math.random() * availablePlays.length)]
+        const availablePlays = board.getAvailableMovesForPlayer(this.identifier)
+        let choosenActionIndex = availablePlays[availablePlays.length - 1]
 
-        if (availablePlays.length > 1) {
-            availablePlays.reduce((bestScoreSoFar, moveIndex) => {
-                const result = this.engine.makeMove(
-                    { player: this.identifier, pocketId: moveIndex },
-                    boardConfig
-                )
-                const playScore = this.evaluate(
-                    result.boardConfig,
-                    this.maxDepth,
-                    result.nextTurnPlayer
-                )
-                if (playScore > bestScoreSoFar) {
-                    bestScoreSoFar = playScore
-                    choosenActionIndex = moveIndex
-                }
-                return bestScoreSoFar
-            }, -Infinity)
-        }
+        // if (availablePlays.length > 1) {
+        //     availablePlays.reduce((bestScoreSoFar, moveIndex) => {
+        //         const result = this.engine.makeMove(
+        //             { player: this.identifier, pocketId: moveIndex },
+        //             boardConfig
+        //         )
+        //         const playScore = this.evaluate(
+        //             result.boardConfig,
+        //             this.maxDepth,
+        //             result.nextTurnPlayer
+        //         )
+        //         if (playScore > bestScoreSoFar) {
+        //             bestScoreSoFar = playScore
+        //             choosenActionIndex = moveIndex
+        //         }
+        //         return bestScoreSoFar
+        //     }, -Infinity)
+        // }
 
         console.log(
             'done thinking',
@@ -87,7 +83,7 @@ export class Minimax {
     ): number {
         ++this.playsAnalysed
         const board = new DynamicBoardAnalyser(boardConfig)
-        const availablePlays = board.getAvailablePlaysForPlayer(playingPlayerSide)
+        const availablePlays = board.getAvailableMovesForPlayer(playingPlayerSide)
 
         const gameOver = board.isGameOver()
         // if (this.aborted) {

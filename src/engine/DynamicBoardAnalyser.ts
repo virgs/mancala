@@ -13,8 +13,8 @@ export class DynamicBoardAnalyser {
 
     public isGameOver(): PlayerSide | undefined {
         if (
-            this.getAvailablePlaysForPlayer(PlayerSide.TOP).length > 0 ||
-            this.getAvailablePlaysForPlayer(PlayerSide.BOTTOM).length > 0
+            this.getAvailableMovesForPlayer(PlayerSide.TOP).length > 0 &&
+            this.getAvailableMovesForPlayer(PlayerSide.BOTTOM).length > 0
         ) {
             return undefined
         }
@@ -25,16 +25,12 @@ export class DynamicBoardAnalyser {
 
     public checkPartialResultsForPlayer(playerIdentifier: PlayerSide) {
         const topPlayerResult =
-            this.boardConfig[
-            this.staticBoardAnalyser.getPlayerStorePocketIndex(PlayerSide.TOP)
-            ] -
-            this.boardConfig[
-            this.staticBoardAnalyser.getPlayerStorePocketIndex(PlayerSide.BOTTOM)
-            ]
+            this.boardConfig[this.staticBoardAnalyser.getPlayerStorePocketIndex(PlayerSide.TOP)] -
+            this.boardConfig[this.staticBoardAnalyser.getPlayerStorePocketIndex(PlayerSide.BOTTOM)]
         return playerIdentifier === PlayerSide.TOP ? topPlayerResult : -topPlayerResult
     }
 
-    public getAvailablePlaysForPlayer(playerIdentifier: PlayerSide): number[] {
+    public getAvailableMovesForPlayer(playerIdentifier: PlayerSide): number[] {
         return this.boardConfig.reduce((acc, stones, pocketId) => {
             if (
                 this.staticBoardAnalyser.checkPocketOwnership(playerIdentifier, pocketId) &&

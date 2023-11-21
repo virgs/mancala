@@ -11,9 +11,7 @@ export class StaticBoardAnalyser {
     }
 
     public getPlayerStorePocketIndex(playerIdentifier: PlayerSide): number {
-        return playerIdentifier === PlayerSide.TOP
-            ? this.boardLength / 2 - 1
-            : this.boardLength - 1
+        return playerIdentifier === PlayerSide.TOP ? this.boardLength / 2 - 1 : this.boardLength - 1
     }
 
     public isPocketStore(pocketId: number): boolean {
