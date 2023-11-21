@@ -1,19 +1,20 @@
-<script setup lang="ts">
-import { RouterView } from 'vue-router'
-</script>
-
 <template>
-    <!-- <header> -->
-    <!-- <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" /> -->
-
-    <!-- <div class="wrapper"> -->
-    <!-- <nav>
-        <RouterLink to="/">Home</RouterLink>
-      </nav> -->
-    <!-- </div> -->
-    <!-- </header> -->
-
-    <RouterView />
+  <main>
+    <MancalaView :gameSettings="gameSettings" />
+  </main>
 </template>
 
-<style scoped></style>
+<script setup lang="ts">
+import MancalaView from '@/components/Mancala.vue';
+import { BrainLevel } from '@/engine/Brain';
+import { reactive } from 'vue';
+
+const gameSettings = reactive({
+  gameIsRunning: true,
+  internalPockets: 6,
+  initialStones: 4,
+  animationSpeedInMs: 50,
+  topPlayerBrainLevel: BrainLevel.BEGINNER,
+  bottomPlayerBrainLevel: BrainLevel.HARD,
+})
+</script>
