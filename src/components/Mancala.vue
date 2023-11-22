@@ -41,11 +41,11 @@
 
 <script lang="ts">
 import { createBoard } from '@/engine/BoardConfig'
+import { MancalaEngine, type MoveRequest, type MoveResult } from '@/engine/MancalaEngine'
 import { Player } from '@/engine/player/Player'
+import { PlayerSide } from '@/engine/player/PlayerSide'
 import { PlayerType } from '@/engine/player/PlayerType'
 import Hole from './Hole.vue'
-import { MancalaEngine, type MoveRequest, type MoveResult } from '@/engine/MancalaEngine'
-import { PlayerSide } from '@/engine/player/PlayerSide'
 
 let engine: MancalaEngine
 
@@ -131,10 +131,8 @@ export default {
                 })
             }
         },
-        async updateBoard(nextAction: MoveRequest) {
-            this.$emit('animationIsRunning', true)
-            this.animationRunning = true
-            switch (nextAction.player) {
+        updateAnimationColor(playerSide: PlayerSide) {
+            switch (playerSide) {
                 case PlayerSide.TOP:
                     this.accumulatorColor = 'var(--top-player-color)'
                     break
@@ -142,6 +140,11 @@ export default {
                     this.accumulatorColor = 'var(--bottom-player-color)'
                     break
             }
+        },
+        async updateBoard(nextAction: MoveRequest) {
+            this.$emit('animationIsRunning', true)
+            this.updateAnimationColor(nextAction.player)
+            this.animationRunning = true
             this.playingPlayer = undefined
             this.accumulator = this.board[nextAction.pocketId]
             const result = engine.makeMove(nextAction, this.board)

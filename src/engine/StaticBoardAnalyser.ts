@@ -14,7 +14,11 @@ export class StaticBoardAnalyser {
         return playerSide === PlayerSide.TOP ? this.boardLength / 2 - 1 : this.boardLength - 1
     }
 
-    public getOppositeSideStorePocketIndex(currentPocketId: number): number {
+    public getOppositeSideStorePocketIndex(playerSide: PlayerSide): number {
+        return playerSide !== PlayerSide.TOP ? this.boardLength / 2 - 1 : this.boardLength - 1
+    }
+
+    public getOppositeSidePocketIndex(currentPocketId: number): number {
         return this.boardLength - 2 - currentPocketId
     }
 

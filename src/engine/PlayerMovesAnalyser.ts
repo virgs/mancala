@@ -9,9 +9,15 @@ export class PlayerMovesAnalyser {
         this.playerSide = playerSide
     }
 
-    public checkCurrentPlayerScore(boardConfig: BoardConfig): number {
+    public checkPlayerScore(boardConfig: BoardConfig): number {
         return boardConfig[
             new StaticBoardAnalyser(boardConfig).getSideStorePocketIndex(this.playerSide)
+        ]
+    }
+
+    public checkOppositePlayerScore(boardConfig: BoardConfig): number {
+        return boardConfig[
+            new StaticBoardAnalyser(boardConfig).getOppositeSideStorePocketIndex(this.playerSide)
         ]
     }
 

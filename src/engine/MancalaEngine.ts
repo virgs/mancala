@@ -1,7 +1,7 @@
 import type { BoardConfig } from './BoardConfig'
 import { PlayerMovesAnalyser } from './PlayerMovesAnalyser'
-import { PlayerSide, getOppositePlayerSide } from './player/PlayerSide'
 import { StaticBoardAnalyser } from './StaticBoardAnalyser'
+import { PlayerSide, getOppositePlayerSide } from './player/PlayerSide'
 
 export interface MoveRequest {
     player: PlayerSide
@@ -71,8 +71,8 @@ export class MancalaEngine {
                 gameOver: true,
                 movesRecord: this.engineSettings.recordMoves
                     ? redistributionMovesRecord
-                          .concat(captureMovesRecord)
-                          .concat(gameOverResult.gameOverMovesRecord)
+                        .concat(captureMovesRecord)
+                        .concat(gameOverResult.gameOverMovesRecord)
                     : undefined,
             }
         } else {
@@ -136,7 +136,7 @@ export class MancalaEngine {
                 if (newBoard[currentPocketId] === 1) {
                     // It was empty
                     const oppositeSitePocketId =
-                        this.staticBoardAnalyser.getOppositeSideStorePocketIndex(currentPocketId)
+                        this.staticBoardAnalyser.getOppositeSidePocketIndex(currentPocketId)
                     if (newBoard[oppositeSitePocketId] > 0) {
                         const storePocketIndex =
                             this.staticBoardAnalyser.getSideStorePocketIndex(playingPlayer)

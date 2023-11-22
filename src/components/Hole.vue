@@ -113,7 +113,7 @@ const holeStyle = computed(() => {
     background-color: var(--wooden-shade);
     border: 3px solid;
     display: block;
-    box-shadow: inset 7px 7px 0px var(--wooden-half-shade);
+    box-shadow: inset 5px 5px 0px var(--wooden-half-shade);
     transition: 200ms ease all;
 }
 
@@ -121,7 +121,7 @@ const holeStyle = computed(() => {
     border-color: var(--hihglighted-number-color) !important;
 
     box-shadow:
-        inset 7px 7px 0px var(--wooden-half-shade),
+        inset 5px 5px 0px var(--wooden-half-shade),
         1px 1px 5px var(--hihglighted-number-color) !important;
     cursor: pointer;
 }

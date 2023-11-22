@@ -7,8 +7,6 @@
 <script setup lang="ts">
 import MancalaView from '@/components/Mancala.vue'
 import { reactive } from 'vue'
-import type { MoveResult } from './engine/MancalaEngine'
-import { HumanBrain } from './engine/player/HumanBrain'
 import { AiBrain } from './engine/ai/AiBrain'
 import { AiBrainLevel } from './engine/ai/AiBrainLevel'
 import { Player } from './engine/player/Player'
@@ -18,14 +16,15 @@ const gameSettings = reactive({
     gameIsRunning: true,
     internalPockets: 6,
     initialStones: 4,
-    animationSpeedInMs: 250,
-    topPlayer: new Player(PlayerSide.TOP, new AiBrain(AiBrainLevel.MEDIUM)),
-    bottomPlayer: new Player(PlayerSide.BOTTOM, new HumanBrain()),
+    animationSpeedInMs: 50,
+    topPlayer: new Player(PlayerSide.TOP, new AiBrain(AiBrainLevel.HARD)),
+    bottomPlayer: new Player(PlayerSide.BOTTOM, new AiBrain(AiBrainLevel.HARDCORE)),
+    // bottomPlayer: new Player(PlayerSide.BOTTOM, new HumanBrain()),
 })
 
-const gameOver = (result: MoveResult) => {
-    if (result.winningPlayer) {
-        console.log('Player ' + result.winningPlayer + ' won')
+const gameOver = (winningPlayer: PlayerSide) => {
+    if (winningPlayer) {
+        console.log('Player ' + winningPlayer + ' won')
     } else {
         console.log('It was a DRAW')
     }
