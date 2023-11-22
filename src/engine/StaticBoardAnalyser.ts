@@ -10,15 +10,15 @@ export class StaticBoardAnalyser {
         this.totalStones = board.reduce((acc, stones) => acc + stones, 0)
     }
 
-    public getSideStorePocketIndex(playerSide: PlayerSide): number {
+    public getSideStorePitId(playerSide: PlayerSide): number {
         return playerSide === PlayerSide.TOP ? this.boardLength / 2 - 1 : this.boardLength - 1
     }
 
-    public getOppositeSideStorePocketIndex(playerSide: PlayerSide): number {
+    public getOppositeSideStorePitId(playerSide: PlayerSide): number {
         return playerSide !== PlayerSide.TOP ? this.boardLength / 2 - 1 : this.boardLength - 1
     }
 
-    public getOppositeSidePocketIndex(pitId: number): number {
+    public getOppositeSidePitId(pitId: number): number {
         return this.boardLength - 2 - pitId
     }
 

@@ -18,6 +18,7 @@ const props = defineProps<{
     side: PlayerSide
     ownerPlayerType?: PlayerType
     seeds: number
+    lastSelectedPitId?: number
     playingPlayerSide: PlayerSide | undefined
 }>()
 
@@ -82,15 +83,17 @@ function mouseLeft() {
 }
 
 const pitClass = computed(() => ({
+    'd-block': true,
     hole: true,
+    number: true,
     stonesNumberChangedAnimation: stonesNumberChangedAnimation.value,
     availableOption: availableActionOption.value,
+    lastSelectedPit: props.lastSelectedPitId === props.index,
     hovered: mouseIsOver.value && availableActionOption.value,
 }))
 
 const pitStyle = computed(() => {
-    const playerColor =
-        props.side === PlayerSide.BOTTOM ? 'var(--bottom-player-color)' : 'var(--top-player-color)'
+    const playerColor = props.side === PlayerSide.BOTTOM ? 'var(--bottom-player-color)' : 'var(--top-player-color)'
     return {
         ...borders,
         'border-color': playerColor,
@@ -102,19 +105,23 @@ const pitStyle = computed(() => {
 
 <style scoped>
 .hole {
-    text-shadow: 2px 2px black;
     border-radius: 15%;
-    font-family: var(--game-font-family);
-    font-size: 1.5rem;
-    font-weight: bolder;
     transform: translateY(70%);
     height: 40%;
     width: 75%;
     background-color: var(--wooden-shade);
     border: 3px solid;
-    display: block;
     box-shadow: inset 5px 5px 0px var(--wooden-half-shade);
     transition: 200ms ease all;
+}
+
+.lastSelectedPit {
+    border-color: white !important;
+
+    box-shadow:
+        inset 5px 5px 0px var(--wooden-half-shade),
+        1px 1px 5px var(--hihglighted-number-color) !important;
+    cursor: pointer;
 }
 
 .availableOption {

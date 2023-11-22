@@ -11,9 +11,7 @@ export class BoardPrinter {
 
     public print(pockets: BoardConfig): void {
         const topPlayerPockets = pockets.filter((_pocket, index) => index < pockets.length / 2)
-        const topPlayerInternalPocket = topPlayerPockets.filter(
-            (_pocket, index) => index < topPlayerPockets.length - 1
-        )
+        const topPlayerInternalPocket = topPlayerPockets.filter((_pocket, index) => index < topPlayerPockets.length - 1)
         const bottomPlayerPockets = pockets.filter((_pocket, index) => index >= pockets.length / 2)
         const bottomPlayerInternalPocket = bottomPlayerPockets.filter(
             (_pocket, index) => index < bottomPlayerPockets.length - 1
@@ -28,13 +26,8 @@ export class BoardPrinter {
         )
 
         console.log(
-            [
-                topPlayerPockets[topPlayerPockets.length - 1],
-                bottomPlayerPockets[bottomPlayerPockets.length - 1],
-            ]
-                .map((stones, index) =>
-                    this.printHole(stones, pockets.length - (index * pockets.length) / 2 - 1)
-                )
+            [topPlayerPockets[topPlayerPockets.length - 1], bottomPlayerPockets[bottomPlayerPockets.length - 1]]
+                .map((stones, index) => this.printHole(stones, pockets.length - (index * pockets.length) / 2 - 1))
                 .join(
                     Array.from(Array(topPlayerInternalPocket.length))
                         .map(() => this.emptySpaceGap)

@@ -16,15 +16,17 @@
                     <div class="row g-0 justify-content-center" style="height: 50%">
                         <div v-for="(pit, index) in topInternalPockets" class="col mx-auto">
                             <Pit :seeds="pit" :index="topInternalPockets.length - 1 - index" :store="false"
-                                :ownerPlayerType="topPlayer.brain.type" @nextActionSelected="nextActionSelected"
-                                :playingPlayerSide="playingPlayer?.side" :side="PlayerSide.TOP"></Pit>
+                                :lastSelectedPitId="lastSelectedPitId" :ownerPlayerType="topPlayer.brain.type"
+                                @nextActionSelected="nextActionSelected" :playingPlayerSide="playingPlayer?.side"
+                                :side="PlayerSide.TOP"></Pit>
                         </div>
                     </div>
                     <div class="row g-0 justify-content-center" style="height: 50%">
                         <div v-for="(pit, index) in bottomInternalPockets" class="col mx-auto">
                             <Pit :seeds="pit" :index="index + bottomInternalPockets.length + 1"
-                                :ownerPlayerType="bottomPlayer.brain.type" :playingPlayerSide="playingPlayer?.side"
-                                :store="false" @nextActionSelected="nextActionSelected" :side="PlayerSide.BOTTOM"></Pit>
+                                :lastSelectedPitId="lastSelectedPitId" :ownerPlayerType="bottomPlayer.brain.type"
+                                :playingPlayerSide="playingPlayer?.side" :store="false"
+                                @nextActionSelected="nextActionSelected" :side="PlayerSide.BOTTOM"></Pit>
                         </div>
                     </div>
                 </div>
@@ -62,10 +64,7 @@ export default {
         }
     },
     data() {
-        const board = createBoard(
-            this.gameSettings.internalPockets,
-            this.gameSettings.initialStones
-        )
+        const board = createBoard(this.gameSettings.internalPockets, this.gameSettings.initialStones)
         engine = new MancalaEngine(board, {
             recordMoves: true,
         })
@@ -73,7 +72,7 @@ export default {
         return {
             accumulator: 0,
             accumulatorColor: '',
-            lastSelectedPitIndex: undefined as undefined | number,
+            lastSelectedPitId: undefined as undefined | number,
             animationRunning: false,
             board: board,
             playingPlayer: this.gameSettings.topPlayer as Player | undefined,
@@ -89,6 +88,8 @@ export default {
     computed: {
         accumulatorClass() {
             return {
+                'd-block': true,
+                number: true,
                 accumulator: true,
                 hole: true,
                 'accumulator-hole-showing': this.accumulator >= 0,
@@ -101,9 +102,7 @@ export default {
             }
         },
         topInternalPockets(): number[] {
-            return this.board
-                .filter((_pockets, index) => index < this.board.length / 2 - 1)
-                .reverse()
+            return this.board.filter((_pockets, index) => index < this.board.length / 2 - 1).reverse()
         },
         bottomInternalPockets(): number[] {
             return this.board.filter(
@@ -144,6 +143,7 @@ export default {
         },
         async updateBoard(nextAction: MoveRequest) {
             this.$emit('animationIsRunning', true)
+            this.lastSelectedPitId = nextAction.pitId
             this.updateAnimationColor(nextAction.playerSide)
             this.animationRunning = true
             this.playingPlayer = undefined
@@ -151,7 +151,7 @@ export default {
             const result = engine.makeMove(nextAction, this.board)
             const animation = [...result.movesRecord!]
             for (let move of animation) {
-                this.board[move.index] = move.seedsAmount
+                this.board[move.pitId] = move.seeds
                 await this.sleep(this.gameSettings.animationSpeedInMs)
                 --this.accumulator
             }
@@ -161,7 +161,10 @@ export default {
             this.animationRunning = false
             this.$emit('animationIsRunning', false)
             if (actionResult.gameOver) {
-                this.$emit('gameOver', actionResult.winningPlayer)
+                this.$emit('gameOver', {
+                    winningPlayer: actionResult.winningPlayer,
+                    movesHistory: engine.getMovesHistory()
+                })
             } else {
                 this.playingPlayer = this.getBrainFromSide(actionResult.nextTurnPlayer!)
                 this.$emit('playingPlayer', this.playingPlayer)
@@ -197,25 +200,22 @@ export default {
 }
 
 .accumulator {
-    text-shadow: 2px 2px black;
-    border-radius: 15%;
-    font-weight: bolder;
-    display: block;
-
     border: none;
     padding-top: -10px;
 
     color: var(--hihglighted-number-color);
+    background-color: var(--light-wooden-shade);
+    box-shadow: inset -7px -7px 0px var(--wooden-half-shade);
+    border-radius: 15%;
+
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -55%);
-    font-size: 2.5rem;
-    transition: ease all 500ms;
     height: 20%;
     width: 0;
-    background-color: var(--light-wooden-shade);
-    box-shadow: inset -7px -7px 0px var(--wooden-half-shade);
+    transform: translate(-50%, -55%);
+
+    transition: ease all 500ms;
 }
 
 .accumulatorNumber {
@@ -223,6 +223,7 @@ export default {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -55%);
+    font-size: larger;
 }
 
 .accumulator-hole-showing {
@@ -231,4 +232,3 @@ export default {
     border-left: 1px solid var(--wooden-half-shade);
 }
 </style>
-pitIdpitIdpitIdplayerSideplayerSideplayerSidenewSeedAmount

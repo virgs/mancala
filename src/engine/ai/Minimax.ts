@@ -48,15 +48,8 @@ export class Minimax {
 
         if (availablePlays.length > 1 && this.maxDepth > 0) {
             availablePlays.reduce((bestScoreSoFar, moveIndex) => {
-                const result = this.engine.makeMove(
-                    { playerSide: this.playerSide, pitId: moveIndex },
-                    boardConfig
-                )
-                const playScore = this.evaluate(
-                    result.boardConfig,
-                    this.maxDepth,
-                    result.nextTurnPlayer
-                )
+                const result = this.engine.makeMove({ playerSide: this.playerSide, pitId: moveIndex }, boardConfig)
+                const playScore = this.evaluate(result.boardConfig, this.maxDepth, result.nextTurnPlayer)
                 if (playScore > bestScoreSoFar) {
                     bestScoreSoFar = playScore
                     choosenActionIndex = moveIndex
@@ -65,31 +58,23 @@ export class Minimax {
             }, -Infinity)
         }
 
-        console.log(
-            'done thinking',
-            this.maxDepth,
-            availablePlays,
-            choosenActionIndex,
-            this.movesAnalysed
-        )
+        console.log('done thinking', this.maxDepth, availablePlays, choosenActionIndex, this.movesAnalysed)
 
         return [choosenActionIndex]
     }
 
     //https://www.hackerearth.com/blog/developers/minimax-algorithm-alpha-beta-pruning/
-    private evaluate(
-        boardConfig: BoardConfig,
-        depth: number,
-        playingPlayerSide?: PlayerSide
-    ): number {
+    private evaluate(boardConfig: BoardConfig, depth: number, playingPlayerSide?: PlayerSide): number {
         ++this.movesAnalysed
         const gameOver =
             this.playerMovesAnalyser.getAvailableMovesForPlayer(boardConfig).length === 0 ||
             this.playerMovesAnalyser.getAvailableMovesForOpponentPlayer(boardConfig).length === 0
 
         if (depth <= 0 || gameOver || playingPlayerSide === undefined) {
-            return this.playerMovesAnalyser.checkPlayerScore(boardConfig) -
+            return (
+                this.playerMovesAnalyser.checkPlayerScore(boardConfig) -
                 this.playerMovesAnalyser.checkOppositePlayerScore(boardConfig)
+            )
         }
 
         if (playingPlayerSide === this.playerSide) {
@@ -97,29 +82,16 @@ export class Minimax {
             const availableMoves = this.playerMovesAnalyser.getAvailableMovesForPlayer(boardConfig)
 
             const bestValue = availableMoves.reduce((acc, index) => {
-                const result = this.engine.makeMove(
-                    { playerSide: playingPlayerSide, pitId: index },
-                    boardConfig
-                )
-                return Math.max(
-                    acc,
-                    this.evaluate(result.boardConfig, depth - 1, result.nextTurnPlayer)
-                )
+                const result = this.engine.makeMove({ playerSide: playingPlayerSide, pitId: index }, boardConfig)
+                return Math.max(acc, this.evaluate(result.boardConfig, depth - 1, result.nextTurnPlayer))
             }, -Infinity)
             return bestValue
         } else {
             // if (playingPlayer === this.identifier)  // Minimizing
-            const availableMoves =
-                this.playerMovesAnalyser.getAvailableMovesForOpponentPlayer(boardConfig)
+            const availableMoves = this.playerMovesAnalyser.getAvailableMovesForOpponentPlayer(boardConfig)
             const worstValue = availableMoves.reduce((acc, index) => {
-                const result = this.engine.makeMove(
-                    { playerSide: playingPlayerSide, pitId: index },
-                    boardConfig
-                )
-                return Math.min(
-                    acc,
-                    this.evaluate(result.boardConfig, depth - 1, result.nextTurnPlayer)
-                )
+                const result = this.engine.makeMove({ playerSide: playingPlayerSide, pitId: index }, boardConfig)
+                return Math.min(acc, this.evaluate(result.boardConfig, depth - 1, result.nextTurnPlayer))
             }, Infinity)
             return worstValue
         }

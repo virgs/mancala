@@ -1,37 +1,48 @@
-import type { BoardConfig } from './BoardConfig';
-
-
-export type BoardMoveMakerRecord = {
-    pitId: number
-    seeds: number
-}
+import type { BoardConfig } from './BoardConfig'
+import type { MoveRecord } from './MancalaEngine'
 
 export class BoardMoveMaker {
-    private readonly board: BoardConfig;
-    private readonly captureMovesRecord: BoardMoveMakerRecord[];
+    private readonly board: BoardConfig
+    private readonly movesRecord: MoveRecord[]
 
     public constructor(board: BoardConfig) {
-        this.board = board;
-        this.captureMovesRecord = [];
+        this.board = [...board]
+        this.movesRecord = []
+    }
+
+    public getLastIncrementedPitId(): number {
+        return this.movesRecord[this.movesRecord.length - 1].pitId
     }
 
     public getPitSeeds(pitId: number): number {
-        return this.board[pitId];
+        return this.board[pitId]
     }
 
-    public setPitSeeds(pitId: number, seeds: number): void {
-        this.board[pitId] = seeds;
-        this.captureMovesRecord.push({
+    public setPitSeeds(pitId: number, seeds: number): number {
+        const previousSeedsValue = this.board[pitId]
+        this.board[pitId] = seeds
+        this.movesRecord.push({
             pitId: pitId,
             seeds: this.board[pitId],
-        });
+        })
+        return previousSeedsValue
     }
 
-    public incrementPitSeeds(pitId: number, seeds: number): void {
-        this.setPitSeeds(pitId, seeds + this.board[pitId]);
+    public getBoard(): number[] {
+        return this.board
     }
 
-    public getCaptureMovesRecord(): BoardMoveMakerRecord[] {
-        return this.captureMovesRecord;
+    public transferSeeds(fromPitId: number, toPitId: number): void {
+        const seeds = this.board[fromPitId]
+        this.setPitSeeds(fromPitId, 0)
+        this.incrementPitSeeds(toPitId, seeds)
+    }
+
+    public incrementPitSeeds(pitId: number, seeds: number = 1): number {
+        return this.setPitSeeds(pitId, seeds + this.board[pitId])
+    }
+
+    public getMovesRecord(): MoveRecord[] {
+        return this.movesRecord
     }
 }

@@ -10,15 +10,11 @@ export class PlayerMovesAnalyser {
     }
 
     public checkPlayerScore(boardConfig: BoardConfig): number {
-        return boardConfig[
-            new StaticBoardAnalyser(boardConfig).getSideStorePocketIndex(this.playerSide)
-        ]
+        return boardConfig[new StaticBoardAnalyser(boardConfig).getSideStorePitId(this.playerSide)]
     }
 
     public checkOppositePlayerScore(boardConfig: BoardConfig): number {
-        return boardConfig[
-            new StaticBoardAnalyser(boardConfig).getOppositeSideStorePocketIndex(this.playerSide)
-        ]
+        return boardConfig[new StaticBoardAnalyser(boardConfig).getOppositeSideStorePitId(this.playerSide)]
     }
 
     public getAvailableMovesForPlayer(boardConfig: BoardConfig): number[] {
@@ -39,10 +35,7 @@ export class PlayerMovesAnalyser {
         const staticBoardAnalyser = new StaticBoardAnalyser(boardConfig)
         return boardConfig.reduce((acc, stones, pocketId) => {
             if (
-                staticBoardAnalyser.checkPocketOwnership(
-                    getOppositePlayerSide(this.playerSide),
-                    pocketId
-                ) &&
+                staticBoardAnalyser.checkPocketOwnership(getOppositePlayerSide(this.playerSide), pocketId) &&
                 !staticBoardAnalyser.isPocketStore(pocketId) &&
                 stones > 0
             ) {

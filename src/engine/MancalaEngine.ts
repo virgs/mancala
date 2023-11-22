@@ -24,22 +24,15 @@ interface GameOverResult {
     winningPlayer?: PlayerSide
 }
 
-export class InvalidMove extends Error {
-    constructor(message: string) {
-        super(message)
-    }
-}
-
-interface MoveRecord {
-    index: number
-    seedsAmount: number
+export interface MoveRecord {
+    pitId: number
+    seeds: number
 }
 
 type EngineSettings = {
     recordMoves?: boolean
     gameOverCaptureVariation?: boolean
 }
-
 
 export class MancalaEngine {
     private readonly staticBoardAnalyser: StaticBoardAnalyser
@@ -54,74 +47,62 @@ export class MancalaEngine {
 
     public makeMove(move: MoveRequest, boardConfig: BoardConfig): MoveResult {
         this.validateMove(move, boardConfig)
-        this.movesHistory.push(move);
-
-        const { redistributionMovesRecord, currentPocketId, boardAfterRedistribution } =
-            this.redistributeSeeds(move, boardConfig)
-
         const playingPlayer = move.playerSide
+        this.movesHistory.push(move)
 
-        const { captureMovesRecord, boardAfterCapture } = this.checkCapture(
-            playingPlayer,
-            currentPocketId,
-            boardAfterRedistribution
-        )
+        const redistribution = this.redistributeSeeds(move, boardConfig)
+        const lastIncrementedPitId = redistribution.getLastIncrementedPitId()
+        const capture = this.checkCapture(playingPlayer, lastIncrementedPitId, redistribution.getBoard())
 
-        const gameOverResult = this.checkGameOver(playingPlayer, boardAfterCapture)
-        if (gameOverResult.gameOver) {
+        const gameOverResult = this.checkGameOver(playingPlayer, capture.getBoard())
+        if (gameOverResult) {
             return {
                 winningPlayer: gameOverResult.winningPlayer,
                 nextTurnPlayer: playingPlayer, //non-important
                 boardConfig: gameOverResult.boardConfig,
                 gameOver: true,
                 movesRecord: this.engineSettings.recordMoves
-                    ? redistributionMovesRecord
-                        .concat(captureMovesRecord)
+                    ? redistribution
+                        .getMovesRecord()
+                        .concat(capture.getMovesRecord())
                         .concat(gameOverResult.gameOverMovesRecord)
                     : undefined,
             }
         } else {
-            const nextPlayerTurn = this.checkNextPlayerTurn(playingPlayer, currentPocketId)
+            const nextPlayerTurn = this.checkNextPlayerTurn(playingPlayer, lastIncrementedPitId)
 
             return {
                 nextTurnPlayer: nextPlayerTurn,
-                boardConfig: boardAfterCapture,
+                boardConfig: capture.getBoard(),
                 gameOver: false,
                 movesRecord: this.engineSettings.recordMoves
-                    ? redistributionMovesRecord.concat(captureMovesRecord)
+                    ? redistribution.getMovesRecord().concat(capture.getMovesRecord())
                     : undefined,
             }
         }
     }
 
-    private redistributeSeeds(move: MoveRequest, board: number[]) {
-        const newBoard = [...board]
-        let currentPocketId = move.pitId
-        let remainingStones = newBoard[move.pitId]
-        newBoard[currentPocketId] = 0
-        const redistributionMovesRecord: MoveRecord[] = [
-            {
-                index: currentPocketId,
-                seedsAmount: 0,
-            },
-        ]
+    private redistributeSeeds(move: MoveRequest, board: number[]): BoardMoveMaker {
+        const boardMoveMaker = new BoardMoveMaker(board)
+        let currentPitId = move.pitId
+        let remainingStones = boardMoveMaker.setPitSeeds(currentPitId, 0)
 
         while (remainingStones > 0) {
-            currentPocketId = this.staticBoardAnalyser.getNextPocketId(currentPocketId)
+            currentPitId = this.staticBoardAnalyser.getNextPocketId(currentPitId)
             if (
-                this.staticBoardAnalyser.isPocketStore(currentPocketId) &&
-                !this.staticBoardAnalyser.checkPocketOwnership(move.playerSide, currentPocketId)
+                this.staticBoardAnalyser.isPocketStore(currentPitId) &&
+                !this.staticBoardAnalyser.checkPocketOwnership(move.playerSide, currentPitId)
             ) {
                 continue
             }
-            ++newBoard[currentPocketId]
-            redistributionMovesRecord.push({
-                index: currentPocketId,
-                seedsAmount: newBoard[currentPocketId],
-            })
+            boardMoveMaker.incrementPitSeeds(currentPitId)
             --remainingStones
         }
-        return { redistributionMovesRecord, currentPocketId, boardAfterRedistribution: newBoard }
+        return boardMoveMaker
+    }
+
+    public getMovesHistory(): MoveRequest[] {
+        return this.movesHistory
     }
 
     private checkNextPlayerTurn(playingPlayer: PlayerSide, currentPocketId: number): PlayerSide {
@@ -133,146 +114,86 @@ export class MancalaEngine {
         return getOppositePlayerSide(playingPlayer)
     }
 
-    private checkCapture(playingPlayer: PlayerSide, currentPocketId: number, board: number[]) {
+    private checkCapture(playingPlayer: PlayerSide, currentPocketId: number, board: number[]): BoardMoveMaker {
         const boardMoveMaker = new BoardMoveMaker(board)
-        const newBoard = [...board]
-        const captureMovesRecord: MoveRecord[] = []
         if (this.staticBoardAnalyser.checkPocketOwnership(playingPlayer, currentPocketId)) {
-            if (!this.staticBoardAnalyser.isPocketStore(currentPocketId)) {
-                // boardMoveMaker.getPitSeeds(currentPocketId)
-                if (newBoard[currentPocketId] === 1) {
-                    // It was empty
-                    const oppositeSitePocketId =
-                        this.staticBoardAnalyser.getOppositeSidePocketIndex(currentPocketId)
-                    if (newBoard[oppositeSitePocketId] > 0) {
-                        const storePocketIndex =
-                            this.staticBoardAnalyser.getSideStorePocketIndex(playingPlayer)
-
-                        const capturedOpponentStones = newBoard[oppositeSitePocketId]
-                        newBoard[oppositeSitePocketId] = 0
-                        captureMovesRecord.push({
-                            index: oppositeSitePocketId,
-                            seedsAmount: 0,
-                        })
-
-                        newBoard[storePocketIndex] += capturedOpponentStones
-                        captureMovesRecord.push({
-                            index: storePocketIndex,
-                            seedsAmount: newBoard[storePocketIndex],
-                        })
-
-                        const capturedPlayerStones = newBoard[currentPocketId]
-                        newBoard[currentPocketId] = 0
-                        captureMovesRecord.push({
-                            index: currentPocketId,
-                            seedsAmount: 0,
-                        })
-
-                        newBoard[storePocketIndex] += capturedPlayerStones
-                        captureMovesRecord.push({
-                            index: storePocketIndex,
-                            seedsAmount: newBoard[storePocketIndex],
-                        })
+            if (boardMoveMaker.getPitSeeds(currentPocketId) === 1) {
+                if (!this.staticBoardAnalyser.isPocketStore(currentPocketId)) {
+                    const oppositeSitePocketId = this.staticBoardAnalyser.getOppositeSidePitId(currentPocketId)
+                    if (boardMoveMaker.getPitSeeds(oppositeSitePocketId) > 0) {
+                        const storePocketIndex = this.staticBoardAnalyser.getSideStorePitId(playingPlayer)
+                        boardMoveMaker.transferSeeds(oppositeSitePocketId, storePocketIndex)
+                        boardMoveMaker.transferSeeds(currentPocketId, storePocketIndex)
                     }
                 }
             }
         }
-        return {
-            captureMovesRecord,
-            boardAfterCapture: newBoard,
-        }
+        return boardMoveMaker
     }
 
-    private validateMove(move: MoveRequest, newBoard: number[]) {
+    private validateMove(move: MoveRequest, board: number[]) {
         if (!this.staticBoardAnalyser.checkPocketOwnership(move.playerSide, move.pitId)) {
-            throw new InvalidMove(
-                `Player '${move.playerSide}' cannot select an opponent's pocket (${move.pitId})`
-            )
+            throw new Error(`Player '${move.playerSide}' cannot select an opponent's pit (${move.pitId})`)
         }
         if (this.staticBoardAnalyser.isPocketStore(move.pitId)) {
-            throw new InvalidMove(
-                `Player '${move.playerSide}' cannot select a store (${move.pitId})`
-            )
+            throw new Error(`Player '${move.playerSide}' cannot select a store (${move.pitId})`)
         }
-        if (newBoard[move.pitId] === 0) {
-            throw new InvalidMove(
-                `Player '${move.playerSide}' cannot select an empty pocket (${move.pitId})`
-            )
+        if (board[move.pitId] === 0) {
+            throw new Error(`Player '${move.playerSide}' cannot select an empty pit (${move.pitId})`)
         }
     }
 
-    private checkGameOver(playingPlayer: PlayerSide, board: number[]): GameOverResult {
+    private checkGameOver(playingPlayer: PlayerSide, board: number[]): GameOverResult | undefined {
         const playerMovesDetector = new PlayerMovesAnalyser(playingPlayer)
         if (
             playerMovesDetector.getAvailableMovesForPlayer(board).length !== 0 &&
             playerMovesDetector.getAvailableMovesForOpponentPlayer(board).length !== 0
         ) {
-            return {
-                boardConfig: board,
-                winningPlayer: undefined,
-                gameOverMovesRecord: [],
-                gameOver: false,
-            }
+            return undefined
         }
-        const opponentPlayer = getOppositePlayerSide(playingPlayer)
-        const playingPlayerStore = this.staticBoardAnalyser.getSideStorePocketIndex(playingPlayer)
-        const opponentPlayerStore = this.staticBoardAnalyser.getSideStorePocketIndex(opponentPlayer)
-
-        const gameOverMovesRecord: MoveRecord[] = this.getGameOverMovesRecord(board, playingPlayer)
+        const playingPlayerScore = playerMovesDetector.checkPlayerScore(board)
+        const opponentPlayerScore = playerMovesDetector.checkOppositePlayerScore(board)
+        const gameOverMoves = this.getGameOverMovesRecord(board, playingPlayer)
 
         let winningPlayer: PlayerSide | undefined //DRAW
-        if (board[playingPlayerStore] > board[opponentPlayerStore]) {
+        if (playingPlayerScore > opponentPlayerScore) {
             winningPlayer = playingPlayer
-        } else if (board[playingPlayerStore] < board[opponentPlayerStore]) {
-            winningPlayer = opponentPlayer
+        } else if (playingPlayerScore < opponentPlayerScore) {
+            winningPlayer = getOppositePlayerSide(playingPlayer)
         }
 
         return {
             gameOver: true,
-            boardConfig: board,
-            gameOverMovesRecord: gameOverMovesRecord,
+            boardConfig: gameOverMoves.getBoard(),
+            gameOverMovesRecord: gameOverMoves.getMovesRecord(),
             winningPlayer: winningPlayer,
         }
     }
 
-    private getGameOverMovesRecord(board: number[], playingPlayer: PlayerSide) {
-        const gameOverMovesRecord: MoveRecord[] = []
+    private getGameOverMovesRecord(board: number[], playingPlayer: PlayerSide): BoardMoveMaker {
+        const boardMoveMaker = new BoardMoveMaker(board)
         if (this.engineSettings.gameOverCaptureVariation) {
-            const playingPlayerStore =
-                this.staticBoardAnalyser.getSideStorePocketIndex(playingPlayer)
-            board.forEach((index) => {
+            const playingPlayerStore = this.staticBoardAnalyser.getSideStorePitId(playingPlayer)
+            board.forEach((pitId) => {
                 if (
-                    this.staticBoardAnalyser.checkPocketOwnership(playingPlayer, index) &&
-                    index !== playingPlayerStore
+                    this.staticBoardAnalyser.checkPocketOwnership(playingPlayer, pitId) &&
+                    pitId !== playingPlayerStore
                 ) {
-                    gameOverMovesRecord.push({ index: index, seedsAmount: 0 })
-                    gameOverMovesRecord.push({
-                        index: playingPlayerStore,
-                        seedsAmount: board[playingPlayerStore] + board[index],
-                    })
-                    board[playingPlayerStore] += board[index]
-                    board[index] = 0
+                    boardMoveMaker.transferSeeds(pitId, playingPlayerStore)
                 }
             })
 
             const opponentPlayer = getOppositePlayerSide(playingPlayer)
-            const opponentPlayerStore =
-                this.staticBoardAnalyser.getSideStorePocketIndex(opponentPlayer)
-            board.forEach((index) => {
+            const opponentPlayerStore = this.staticBoardAnalyser.getSideStorePitId(opponentPlayer)
+            board.forEach((pitId) => {
                 if (
-                    this.staticBoardAnalyser.checkPocketOwnership(opponentPlayer, index) &&
-                    index !== opponentPlayerStore
+                    this.staticBoardAnalyser.checkPocketOwnership(opponentPlayer, pitId) &&
+                    pitId !== opponentPlayerStore
                 ) {
-                    gameOverMovesRecord.push({ index: index, seedsAmount: 0 })
-                    gameOverMovesRecord.push({
-                        index: opponentPlayerStore,
-                        seedsAmount: board[opponentPlayerStore] + board[index],
-                    })
-                    board[opponentPlayerStore] += board[index]
-                    board[index] = 0
+                    boardMoveMaker.transferSeeds(pitId, opponentPlayerStore)
                 }
             })
         }
-        return gameOverMovesRecord
+        return boardMoveMaker
     }
 }
