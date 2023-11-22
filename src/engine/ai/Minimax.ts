@@ -1,22 +1,22 @@
 import type { BoardConfig } from '../BoardConfig'
-import { BoardEngine } from '../BoardEngine'
-import { PlayerMovesDetector } from '../DynamicBoardAnalyser'
-import type { PlayerSide } from '../PlayerSide'
+import { PlayerMovesAnalyser } from '../PlayerMovesAnalyser'
+import { MancalaEngine } from '../MancalaEngine'
+import type { PlayerSide } from '../player/PlayerSide'
 import { AiBrainLevel } from './AiBrainLevel'
 
 export class Minimax {
     private readonly maxDepth: number
     private readonly playerSide: PlayerSide
-    private readonly engine: BoardEngine
-    private readonly playerMovesDetector: PlayerMovesDetector
+    private readonly engine: MancalaEngine
+    private readonly playerMovesDetector: PlayerMovesAnalyser
     private movesAnalysed: number
     private aborted: boolean
 
     public constructor(aiBainLevel: AiBrainLevel, playerSide: PlayerSide, board: BoardConfig) {
         this.aborted = false
         this.movesAnalysed = 0
-        this.playerMovesDetector = new PlayerMovesDetector(playerSide)
-        this.engine = new BoardEngine(board)
+        this.playerMovesDetector = new PlayerMovesAnalyser(playerSide)
+        this.engine = new MancalaEngine(board)
         this.playerSide = playerSide
         this.maxDepth = 0
         switch (aiBainLevel) {
@@ -80,16 +80,19 @@ export class Minimax {
     private evaluate(
         boardConfig: BoardConfig,
         depth: number,
-        playingPlayerSide: PlayerSide
+        playingPlayerSide?: PlayerSide
     ): number {
         ++this.movesAnalysed
-        const gameOver = this.playerMovesDetector.isGameOver(boardConfig)
+        const gameOver =
+            this.playerMovesDetector.getAvailableMovesForPlayer(boardConfig).length === 0 ||
+            this.playerMovesDetector.getAvailableMovesForOpponentPlayer(boardConfig).length === 0
 
-        if (depth <= 0 || gameOver) {
-            return this.playerMovesDetector.checkPartialResultsForPlayer(boardConfig)
+        if (depth <= 0 || gameOver || playingPlayerSide === undefined) {
+            return this.playerMovesDetector.checkCurrentPlayerScore(boardConfig)
         }
 
-        if (playingPlayerSide === this.playerSide) {// Maximizing
+        if (playingPlayerSide === this.playerSide) {
+            // Maximizing
             const availableMoves = this.playerMovesDetector.getAvailableMovesForPlayer(boardConfig)
 
             const bestValue = availableMoves.reduce((acc, index) => {
@@ -103,9 +106,10 @@ export class Minimax {
                 )
             }, Infinity)
             return bestValue
-
-        } else { // if (playingPlayer === this.identifier)  // Minimizing
-            const availableMoves = this.playerMovesDetector.getAvailableMovesForOpponentPlayer(boardConfig)
+        } else {
+            // if (playingPlayer === this.identifier)  // Minimizing
+            const availableMoves =
+                this.playerMovesDetector.getAvailableMovesForOpponentPlayer(boardConfig)
             const worstValue = availableMoves.reduce((acc, index) => {
                 const result = this.engine.makeMove(
                     { player: playingPlayerSide, pocketId: index },

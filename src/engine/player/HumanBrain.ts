@@ -1,6 +1,6 @@
 import type { BoardConfig } from '../BoardConfig'
 import type { Brain } from './Brain'
-import { PlayerSide } from '../PlayerSide'
+import { PlayerSide } from './PlayerSide'
 import { PlayerType } from './PlayerType'
 
 export class HumanBrain implements Brain {

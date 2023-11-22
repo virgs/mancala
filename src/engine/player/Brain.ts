@@ -1,5 +1,5 @@
 import type { BoardConfig } from '../BoardConfig'
-import { PlayerSide } from '../PlayerSide'
+import { PlayerSide } from './PlayerSide'
 import type { PlayerType } from './PlayerType'
 
 export interface Brain {

@@ -1,6 +1,6 @@
 import { Minimax } from './Minimax'
 import type { AiBrainLevel } from './AiBrainLevel'
-import type { PlayerSide } from '../PlayerSide'
+import type { PlayerSide } from '../player/PlayerSide'
 
 export type SolverWorkerRequest = {
     playingPlayer: PlayerSide

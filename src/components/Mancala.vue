@@ -1,37 +1,69 @@
 <template>
     <div class="container-lg text-center" id="boardContainer">
-        <img src="@/assets/wooden-square-plank.png" class="img-fluid w-100" alt="wooden-square-plank" />
-        <span v-if="animationRunning && accumulator >= 0" :class="accumulatorClass" :style="accumulatorStyle">
+        <img
+            src="@/assets/wooden-square-plank.png"
+            class="img-fluid w-100"
+            alt="wooden-square-plank"
+        />
+        <span
+            v-if="animationRunning && accumulator >= 0"
+            :class="accumulatorClass"
+            :style="accumulatorStyle"
+        >
             <span class="accumulatorNumber number">{{ accumulator }}</span>
         </span>
         <div class="container-fluid px-5 plank-board">
             <div class="row g-2 h-100">
                 <div class="col">
-                    <Hole :stones="board[6]" :index="6" :playingPlayerSide="playingPlayer?.side" :store="true"
-                        :ownerPlayerType="topPlayer.brain.type" @nextActionSelected="nextActionSelected"
-                        :side="PlayerSide.TOP">
+                    <Hole
+                        :stones="board[6]"
+                        :index="6"
+                        :playingPlayerSide="playingPlayer?.side"
+                        :store="true"
+                        :ownerPlayerType="topPlayer.brain.type"
+                        @nextActionSelected="nextActionSelected"
+                        :side="PlayerSide.TOP"
+                    >
                     </Hole>
                 </div>
                 <div class="col-8">
                     <div class="row g-0 justify-content-center" style="height: 50%">
                         <div v-for="(pocket, index) in topInternalPockets" class="col mx-auto">
-                            <Hole :stones="pocket" :index="topInternalPockets.length - 1 - index" :store="false"
-                                :ownerPlayerType="topPlayer.brain.type" @nextActionSelected="nextActionSelected"
-                                :playingPlayerSide="playingPlayer?.side" :side="PlayerSide.TOP"></Hole>
+                            <Hole
+                                :stones="pocket"
+                                :index="topInternalPockets.length - 1 - index"
+                                :store="false"
+                                :ownerPlayerType="topPlayer.brain.type"
+                                @nextActionSelected="nextActionSelected"
+                                :playingPlayerSide="playingPlayer?.side"
+                                :side="PlayerSide.TOP"
+                            ></Hole>
                         </div>
                     </div>
                     <div class="row g-0 justify-content-center" style="height: 50%">
                         <div v-for="(pocket, index) in bottomInternalPockets" class="col mx-auto">
-                            <Hole :stones="pocket" :index="index + bottomInternalPockets.length + 1"
-                                :ownerPlayerType="bottomPlayer.brain.type" :playingPlayerSide="playingPlayer?.side"
-                                :store="false" @nextActionSelected="nextActionSelected" :side="PlayerSide.BOTTOM"></Hole>
+                            <Hole
+                                :stones="pocket"
+                                :index="index + bottomInternalPockets.length + 1"
+                                :ownerPlayerType="bottomPlayer.brain.type"
+                                :playingPlayerSide="playingPlayer?.side"
+                                :store="false"
+                                @nextActionSelected="nextActionSelected"
+                                :side="PlayerSide.BOTTOM"
+                            ></Hole>
                         </div>
                     </div>
                 </div>
                 <div class="col">
-                    <Hole :stones="board[13]" :index="13" :playingPlayerSide="playingPlayer?.side" :store="true"
-                        :ownerPlayerType="bottomPlayer.brain.type" @nextActionSelected="nextActionSelected"
-                        :side="PlayerSide.BOTTOM">
+                    <Hole
+                        :stones="board[13]"
+                        :index="13"
+                        :playingPlayerSide="playingPlayer?.side"
+                        :store="true"
+                        :ownerPlayerType="bottomPlayer.brain.type"
+                        @nextActionSelected="nextActionSelected"
+                        :side="PlayerSide.BOTTOM"
+                    >
                     </Hole>
                 </div>
             </div>
@@ -41,13 +73,13 @@
 
 <script lang="ts">
 import { createBoard } from '@/engine/BoardConfig'
-import { BoardEngine, type MoveRequest, type MoveResult } from '@/engine/BoardEngine'
-import { PlayerSide } from '@/engine/PlayerSide'
 import { Player } from '@/engine/player/Player'
 import { PlayerType } from '@/engine/player/PlayerType'
 import Hole from './Hole.vue'
+import { MancalaEngine, type MoveRequest, type MoveResult } from '@/engine/MancalaEngine'
+import { PlayerSide } from '@/engine/player/PlayerSide'
 
-let engine: BoardEngine
+let engine: MancalaEngine
 
 export default {
     name: 'Mancala',
@@ -66,7 +98,7 @@ export default {
             this.gameSettings.internalPockets,
             this.gameSettings.initialStones
         )
-        engine = new BoardEngine(board, {
+        engine = new MancalaEngine(board, {
             recordMoves: true,
         })
 
@@ -189,7 +221,7 @@ export default {
     position: absolute;
     top: 0;
     left: 10px;
-    height: 100%
+    height: 100%;
 }
 
 .accumulator {
@@ -227,3 +259,4 @@ export default {
     border-left: 1px solid var(--wooden-half-shade);
 }
 </style>
+@/engine/MancalaEngine@/engine/player/PlayerSide

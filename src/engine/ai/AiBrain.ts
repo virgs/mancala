@@ -1,9 +1,9 @@
 import AiWorker from './AiWorker?worker'
 import type { SolverWorkerRequest, SolverWorkerResponse } from './AiWorker'
 import type { BoardConfig } from '../BoardConfig'
-import type { Brain } from './Brain'
-import { PlayerType } from './PlayerType'
-import type { PlayerSide } from '../PlayerSide'
+import type { Brain } from '../player/Brain'
+import { PlayerType } from '../player/PlayerType'
+import type { PlayerSide } from '../player/PlayerSide'
 import { AiBrainLevel } from './AiBrainLevel'
 
 export class AiBrain implements Brain {

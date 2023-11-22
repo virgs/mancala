@@ -1,13 +1,19 @@
 <template>
     <div style="width: 100%; height: 100%; position: relative">
-        <span :class="holeClass" :style="holeStyle" @mouseenter="mouseOver" @mouseleave="mouseLeft" @click="click">
+        <span
+            :class="holeClass"
+            :style="holeStyle"
+            @mouseenter="mouseOver"
+            @mouseleave="mouseLeft"
+            @click="click"
+        >
             {{ stones }}
         </span>
     </div>
 </template>
 
 <script setup lang="ts">
-import { PlayerSide } from '@/engine/PlayerSide'
+import { PlayerSide } from '@/engine/player/PlayerSide'
 import { PlayerType } from '@/engine/player/PlayerType'
 import { computed, ref, watch } from 'vue'
 const emit = defineEmits(['nextActionSelected'])
@@ -138,3 +144,4 @@ const holeStyle = computed(() => {
     font-size: 2rem;
 }
 </style>
+@/engine/player/PlayerSide
