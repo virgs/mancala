@@ -30,7 +30,7 @@ export class Minimax {
                 this.maxDepth = 3
                 break
             case AiBrainLevel.HARDCORE:
-                this.maxDepth = 9
+                this.maxDepth = 8
                 break
         }
     }
@@ -49,7 +49,7 @@ export class Minimax {
         if (availablePlays.length > 1 && this.maxDepth > 0) {
             availablePlays.reduce((bestScoreSoFar, moveIndex) => {
                 const result = this.engine.makeMove({ playerSide: this.playerSide, pitId: moveIndex }, boardConfig)
-                const playScore = this.evaluate(result.boardConfig, this.maxDepth, result.nextTurnPlayer)
+                const playScore = this.evaluate(result.boardConfig, 0, result.nextTurnPlayer)
                 if (playScore > bestScoreSoFar) {
                     bestScoreSoFar = playScore
                     choosenActionIndex = moveIndex
@@ -70,7 +70,7 @@ export class Minimax {
             this.playerMovesAnalyser.getAvailableMovesForPlayer(boardConfig).length === 0 ||
             this.playerMovesAnalyser.getAvailableMovesForOpponentPlayer(boardConfig).length === 0
 
-        if (depth <= 0 || gameOver || playingPlayerSide === undefined) {
+        if (depth >= this.maxDepth || gameOver || playingPlayerSide === undefined) {
             return (
                 this.playerMovesAnalyser.checkPlayerScore(boardConfig) -
                 this.playerMovesAnalyser.checkOppositePlayerScore(boardConfig)
@@ -83,7 +83,7 @@ export class Minimax {
 
             const bestValue = availableMoves.reduce((acc, index) => {
                 const result = this.engine.makeMove({ playerSide: playingPlayerSide, pitId: index }, boardConfig)
-                return Math.max(acc, this.evaluate(result.boardConfig, depth - 1, result.nextTurnPlayer))
+                return Math.max(acc, this.evaluate(result.boardConfig, depth + 1, result.nextTurnPlayer))
             }, -Infinity)
             return bestValue
         } else {
@@ -91,7 +91,7 @@ export class Minimax {
             const availableMoves = this.playerMovesAnalyser.getAvailableMovesForOpponentPlayer(boardConfig)
             const worstValue = availableMoves.reduce((acc, index) => {
                 const result = this.engine.makeMove({ playerSide: playingPlayerSide, pitId: index }, boardConfig)
-                return Math.min(acc, this.evaluate(result.boardConfig, depth - 1, result.nextTurnPlayer))
+                return Math.min(acc, this.evaluate(result.boardConfig, depth + 1, result.nextTurnPlayer))
             }, Infinity)
             return worstValue
         }

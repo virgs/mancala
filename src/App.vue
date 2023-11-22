@@ -19,9 +19,10 @@ const gameSettings = reactive({
     internalPockets: 6,
     initialStones: 4,
     animationSpeedInMs: 50,
-    topPlayer: new Player(PlayerSide.TOP, new HumanBrain()),
-    bottomPlayer: new Player(PlayerSide.BOTTOM, new AiBrain(AiBrainLevel.HARD)),
-    // bottomPlayer: new Player(PlayerSide.BOTTOM, new AiBrain(AiBrainLevel.HARDCORE)),
+    // topPlayer: new Player(PlayerSide.TOP, new HumanBrain()),
+    topPlayer: new Player(PlayerSide.TOP, new AiBrain(AiBrainLevel.HARD)),
+    // bottomPlayer: new Player(PlayerSide.BOTTOM, new AiBrain(AiBrainLevel.HARD)),
+    bottomPlayer: new Player(PlayerSide.BOTTOM, new AiBrain(AiBrainLevel.HARDCORE)),
 })
 
 const gameOver = (result: { winningPlayer: PlayerSide, movesHistory: MoveRequest[] }) => {
