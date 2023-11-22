@@ -1,12 +1,6 @@
 <template>
     <div style="width: 100%; height: 100%; position: relative">
-        <span
-            :class="holeClass"
-            :style="holeStyle"
-            @mouseenter="mouseOver"
-            @mouseleave="mouseLeft"
-            @click="click"
-        >
+        <span :class="holeClass" :style="holeStyle" @mouseenter="mouseOver" @mouseleave="mouseLeft" @click="click">
             {{ stones }}
         </span>
     </div>
@@ -144,4 +138,3 @@ const holeStyle = computed(() => {
     font-size: 2rem;
 }
 </style>
-@/engine/player/PlayerSide

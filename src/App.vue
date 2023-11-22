@@ -31,4 +31,3 @@ const gameOver = (result: MoveResult) => {
     }
 }
 </script>
-./engine/MancalaEngine./engine/player/PlayerSide./engine/ai/AiBrain./engine/ai/AiBrainLevel
