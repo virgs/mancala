@@ -2,9 +2,9 @@
     <div class="container-lg text-center" id="boardContainer">
         <img src="@/assets/wooden-square-plank.png" class="img-fluid w-100" alt="wooden-square-plank" />
         <span v-if="animationRunning && accumulator >= 0" :class="accumulatorClass" :style="accumulatorStyle">
-            <span class="accumulatorNumber">{{ accumulator }}</span>
+            <span class="accumulatorNumber number">{{ accumulator }}</span>
         </span>
-        <div class="container-fluid px-5" style="position: absolute; top: 0; left: 0; height: 100%">
+        <div class="container-fluid px-5 plank-board">
             <div class="row g-2 h-100">
                 <div class="col">
                     <Hole :stones="board[6]" :index="6" :playingPlayerSide="playingPlayer?.side" :store="true"
@@ -55,6 +55,7 @@ export default {
     components: {
         Hole,
     },
+    emits: ['animationIsRunning', 'aiIsThinking', 'gameOver', 'playingPlayer'],
     setup() {
         return {
             PlayerSide,
@@ -72,7 +73,6 @@ export default {
         return {
             accumulator: 0,
             accumulatorColor: '',
-            aiIsThinking: false,
             animationRunning: false,
             board: board,
             playingPlayer: this.gameSettings.topPlayer as Player | undefined,
@@ -112,10 +112,9 @@ export default {
     },
     methods: {
         async aiThinkAboutNextMove() {
-            this.aiIsThinking = true
+            this.$emit('aiIsThinking', true)
             const nextMoveIndex = await this.playingPlayer!.selectNextMove(this.board)
-            this.aiIsThinking = false
-            console.log('AI has selected move', nextMoveIndex)
+            this.$emit('aiIsThinking', false)
             this.updateBoard({
                 player: this.playingPlayer!.side,
                 pocketId: nextMoveIndex,
@@ -133,6 +132,8 @@ export default {
             }
         },
         async updateBoard(nextAction: MoveRequest) {
+            this.$emit('animationIsRunning', true)
+            this.animationRunning = true
             switch (nextAction.player) {
                 case PlayerSide.TOP:
                     this.accumulatorColor = 'var(--top-player-color)'
@@ -143,7 +144,6 @@ export default {
             }
             this.playingPlayer = undefined
             this.accumulator = this.board[nextAction.pocketId]
-            this.animationRunning = true
             const result = engine.makeMove(nextAction, this.board)
             const animation = [...result.movesRecord!]
             for (let move of animation) {
@@ -155,15 +155,12 @@ export default {
         },
         finishUpdatingBoard(actionResult: MoveResult) {
             this.animationRunning = false
+            this.$emit('animationIsRunning', false)
             if (actionResult.gameOver) {
-                if (actionResult.winningPlayer) {
-                    console.log('Player ' + actionResult.winningPlayer + ' won')
-                } else {
-                    console.log('It was a DRAW')
-                }
+                this.$emit('gameOver', actionResult.winningPlayer)
             } else {
                 this.playingPlayer = this.getBrainFromSide(actionResult.nextTurnPlayer!)
-                console.log(this.playingPlayer.side + ' turn' + ' ' + this.playingPlayer.brain.type)
+                this.$emit('playingPlayer', this.playingPlayer)
                 if (this.playingPlayer.brain.type !== PlayerType.HUMAN) {
                     this.aiThinkAboutNextMove()
                 }
@@ -188,11 +185,22 @@ export default {
     transform: translate(-50%, -50%);
 }
 
+.plank-board {
+    position: absolute;
+    top: 0;
+    left: 10px;
+    height: 100%
+}
+
 .accumulator {
+    text-shadow: 2px 2px black;
+    border-radius: 15%;
+    font-weight: bolder;
+    display: block;
+
     border: none;
     padding-top: -10px;
 
-    font-family: var(--game-font-family);
     color: var(--hihglighted-number-color);
     position: absolute;
     top: 50%;

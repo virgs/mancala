@@ -1,12 +1,6 @@
 <template>
     <div style="width: 100%; height: 100%; position: relative">
-        <span
-            :class="holeClass"
-            :style="holeStyle"
-            @mouseenter="mouseOver"
-            @mouseleave="mouseLeft"
-            @click="click"
-        >
+        <span :class="holeClass" :style="holeStyle" @mouseenter="mouseOver" @mouseleave="mouseLeft" @click="click">
             {{ stones }}
         </span>
     </div>
@@ -107,6 +101,22 @@ const holeStyle = computed(() => {
 </script>
 
 <style scoped>
+.hole {
+    text-shadow: 2px 2px black;
+    border-radius: 15%;
+    font-family: var(--game-font-family);
+    font-size: 1.5rem;
+    font-weight: bolder;
+    transform: translateY(70%);
+    height: 40%;
+    width: 75%;
+    background-color: var(--wooden-shade);
+    border: 3px solid;
+    display: block;
+    box-shadow: inset 7px 7px 0px var(--wooden-half-shade);
+    transition: 200ms ease all;
+}
+
 .availableOption {
     border-color: var(--hihglighted-number-color) !important;
 

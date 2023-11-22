@@ -11,12 +11,12 @@ export interface MoveRequest {
 export interface MoveResult {
   boardConfig: BoardConfig
   gameOver: boolean
-  nextTurnPlayer: PlayerSide
+  nextTurnPlayer?: PlayerSide
   winningPlayer?: PlayerSide
   movesRecord?: MoveRecord[]
 }
 
-export interface GameOverResult {
+interface GameOverResult {
   boardConfig: BoardConfig
   gameOver: boolean
   winningPlayer?: PlayerSide
