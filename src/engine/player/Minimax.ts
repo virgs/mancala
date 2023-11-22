@@ -1,21 +1,23 @@
 import type { BoardConfig } from '../BoardConfig'
 import { BoardEngine } from '../BoardEngine'
-import { DynamicBoardAnalyser } from '../DynamicBoardAnalyser'
+import { PlayerMovesDetector } from '../DynamicBoardAnalyser'
 import type { PlayerSide } from '../PlayerSide'
 import { AiBrainLevel } from './AiBrainLevel'
 
 export class Minimax {
     private readonly maxDepth: number
-    private readonly identifier: PlayerSide
+    private readonly playerSide: PlayerSide
     private readonly engine: BoardEngine
-    private playsAnalysed: number
+    private readonly playerMovesDetector: PlayerMovesDetector
+    private movesAnalysed: number
     private aborted: boolean
 
     public constructor(aiBainLevel: AiBrainLevel, playerSide: PlayerSide, board: BoardConfig) {
         this.aborted = false
-        this.playsAnalysed = 0
+        this.movesAnalysed = 0
+        this.playerMovesDetector = new PlayerMovesDetector(playerSide)
         this.engine = new BoardEngine(board)
-        this.identifier = playerSide
+        this.playerSide = playerSide
         this.maxDepth = 0
         switch (aiBainLevel) {
             case AiBrainLevel.BEGINNER:
@@ -38,11 +40,10 @@ export class Minimax {
     }
 
     public async selectBestMove(boardConfig: BoardConfig): Promise<number[]> {
-        this.playsAnalysed = 0
+        this.movesAnalysed = 0
         console.log('thinking')
 
-        const board = new DynamicBoardAnalyser(boardConfig)
-        const availablePlays = board.getAvailableMovesForPlayer(this.identifier)
+        const availablePlays = this.playerMovesDetector.getAvailableMovesForPlayer(boardConfig)
         let choosenActionIndex = availablePlays[availablePlays.length - 1]
 
         // if (availablePlays.length > 1) {
@@ -69,7 +70,7 @@ export class Minimax {
             this.maxDepth,
             availablePlays,
             choosenActionIndex,
-            this.playsAnalysed
+            this.movesAnalysed
         )
 
         return [choosenActionIndex]
@@ -81,37 +82,17 @@ export class Minimax {
         depth: number,
         playingPlayerSide: PlayerSide
     ): number {
-        ++this.playsAnalysed
-        const board = new DynamicBoardAnalyser(boardConfig)
-        const availablePlays = board.getAvailableMovesForPlayer(playingPlayerSide)
+        ++this.movesAnalysed
+        const gameOver = this.playerMovesDetector.isGameOver(boardConfig)
 
-        const gameOver = board.isGameOver()
-        // if (this.aborted) {
-        //     return -1;
-        // }
-        if (gameOver) {
-            return gameOver === playingPlayerSide ? 100 : -100
-        }
-        if (depth <= 0 || gameOver === playingPlayerSide || availablePlays.length === 1) {
-            return board.checkPartialResultsForPlayer(playingPlayerSide)
+        if (depth <= 0 || gameOver) {
+            return this.playerMovesDetector.checkPartialResultsForPlayer(boardConfig)
         }
 
-        if (playingPlayerSide !== this.identifier) {
-            // Minimizing
-            const worstValue = availablePlays.reduce((acc, index) => {
-                const result = this.engine.makeMove(
-                    { player: playingPlayerSide, pocketId: index },
-                    boardConfig
-                )
-                return Math.min(
-                    acc,
-                    this.evaluate(result.boardConfig, depth - 1, result.nextTurnPlayer)
-                )
-            }, Infinity)
-            return worstValue
-        } else {
-            // if (playingPlayer === this.identifier)  // Maximizing
-            const bestValue = availablePlays.reduce((acc, index) => {
+        if (playingPlayerSide === this.playerSide) {// Maximizing
+            const availableMoves = this.playerMovesDetector.getAvailableMovesForPlayer(boardConfig)
+
+            const bestValue = availableMoves.reduce((acc, index) => {
                 const result = this.engine.makeMove(
                     { player: playingPlayerSide, pocketId: index },
                     boardConfig
@@ -122,6 +103,20 @@ export class Minimax {
                 )
             }, Infinity)
             return bestValue
+
+        } else { // if (playingPlayer === this.identifier)  // Minimizing
+            const availableMoves = this.playerMovesDetector.getAvailableMovesForOpponentPlayer(boardConfig)
+            const worstValue = availableMoves.reduce((acc, index) => {
+                const result = this.engine.makeMove(
+                    { player: playingPlayerSide, pocketId: index },
+                    boardConfig
+                )
+                return Math.min(
+                    acc,
+                    this.evaluate(result.boardConfig, depth - 1, result.nextTurnPlayer)
+                )
+            }, Infinity)
+            return worstValue
         }
     }
 }

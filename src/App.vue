@@ -18,7 +18,7 @@ const gameSettings = reactive({
     internalPockets: 6,
     initialStones: 4,
     animationSpeedInMs: 250,
-    topPlayer: new Player(PlayerSide.BOTTOM, new AiBrain(AiBrainLevel.MEDIUM)),
-    bottomPlayer: new Player(PlayerSide.TOP, new HumanBrain()),
+    topPlayer: new Player(PlayerSide.TOP, new AiBrain(AiBrainLevel.MEDIUM)),
+    bottomPlayer: new Player(PlayerSide.BOTTOM, new HumanBrain()),
 })
 </script>

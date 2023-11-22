@@ -10,8 +10,12 @@ export class StaticBoardAnalyser {
         this.totalStones = board.reduce((acc, stones) => acc + stones, 0)
     }
 
-    public getPlayerStorePocketIndex(playerIdentifier: PlayerSide): number {
+    public getSideStorePocketIndex(playerIdentifier: PlayerSide): number {
         return playerIdentifier === PlayerSide.TOP ? this.boardLength / 2 - 1 : this.boardLength - 1
+    }
+
+    public getOppositeSideStorePocketIndex(currentPocketId: number): number {
+        return this.boardLength - 2 - currentPocketId
     }
 
     public isPocketStore(pocketId: number): boolean {
@@ -26,10 +30,6 @@ export class StaticBoardAnalyser {
             return true
         }
         return false
-    }
-
-    public getOppositeSidePocketId(currentPocketId: number): number {
-        return this.boardLength - 2 - currentPocketId
     }
 
     public getNextPocketId(currentPocketId: number): number {

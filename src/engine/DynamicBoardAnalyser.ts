@@ -1,40 +1,45 @@
 import type { BoardConfig } from './BoardConfig'
-import { PlayerSide } from './PlayerSide'
+import { PlayerSide, getOppositePlayerSide } from './PlayerSide'
 import { StaticBoardAnalyser } from './StaticBoardAnalyser'
 
-export class DynamicBoardAnalyser {
-    private readonly boardConfig: BoardConfig
-    private readonly staticBoardAnalyser: StaticBoardAnalyser
+export class PlayerMovesDetector {
+    private readonly playerSide: PlayerSide
 
-    public constructor(board: BoardConfig) {
-        this.staticBoardAnalyser = new StaticBoardAnalyser([...board])
-        this.boardConfig = [...board]
+    public constructor(playerSide: PlayerSide) {
+        this.playerSide = playerSide
     }
 
-    public isGameOver(): PlayerSide | undefined {
-        if (
-            this.getAvailableMovesForPlayer(PlayerSide.TOP).length > 0 &&
-            this.getAvailableMovesForPlayer(PlayerSide.BOTTOM).length > 0
-        ) {
-            return undefined
-        }
-        return this.checkPartialResultsForPlayer(PlayerSide.TOP)
-            ? PlayerSide.TOP
-            : PlayerSide.BOTTOM
+    public isGameOver(boardConfig: BoardConfig): boolean {
+        return (
+            this.getAvailableMovesForPlayer(boardConfig).length === 0 ||
+            this.getAvailableMovesForOpponentPlayer(boardConfig).length === 0
+        );
     }
 
-    public checkPartialResultsForPlayer(playerIdentifier: PlayerSide) {
-        const topPlayerResult =
-            this.boardConfig[this.staticBoardAnalyser.getPlayerStorePocketIndex(PlayerSide.TOP)] -
-            this.boardConfig[this.staticBoardAnalyser.getPlayerStorePocketIndex(PlayerSide.BOTTOM)]
-        return playerIdentifier === PlayerSide.TOP ? topPlayerResult : -topPlayerResult
+    public checkPartialResultsForPlayer(boardConfig: BoardConfig): number {
+        return boardConfig[new StaticBoardAnalyser(boardConfig).getSideStorePocketIndex(this.playerSide)]
     }
 
-    public getAvailableMovesForPlayer(playerIdentifier: PlayerSide): number[] {
-        return this.boardConfig.reduce((acc, stones, pocketId) => {
+    public getAvailableMovesForPlayer(boardConfig: BoardConfig): number[] {
+        const staticBoardAnalyser = new StaticBoardAnalyser(boardConfig)
+        return boardConfig.reduce((acc, stones, pocketId) => {
             if (
-                this.staticBoardAnalyser.checkPocketOwnership(playerIdentifier, pocketId) &&
-                !this.staticBoardAnalyser.isPocketStore(pocketId) &&
+                staticBoardAnalyser.checkPocketOwnership(this.playerSide, pocketId) &&
+                !staticBoardAnalyser.isPocketStore(pocketId) &&
+                stones > 0
+            ) {
+                acc.push(pocketId)
+            }
+            return acc
+        }, [] as number[])
+    }
+
+    public getAvailableMovesForOpponentPlayer(boardConfig: BoardConfig): number[] {
+        const staticBoardAnalyser = new StaticBoardAnalyser(boardConfig)
+        return boardConfig.reduce((acc, stones, pocketId) => {
+            if (
+                staticBoardAnalyser.checkPocketOwnership(getOppositePlayerSide(this.playerSide), pocketId) &&
+                !staticBoardAnalyser.isPocketStore(pocketId) &&
                 stones > 0
             ) {
                 acc.push(pocketId)

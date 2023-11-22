@@ -1,9 +1,9 @@
 import type { BoardConfig } from './BoardConfig'
-import { DynamicBoardAnalyser } from './DynamicBoardAnalyser'
+import { PlayerMovesDetector } from './DynamicBoardAnalyser'
 import { PlayerSide, getOppositePlayerSide } from './PlayerSide'
 import { StaticBoardAnalyser } from './StaticBoardAnalyser'
 
-export interface Move {
+export interface MoveRequest {
   player: PlayerSide
   pocketId: number
 }
@@ -20,7 +20,6 @@ export interface GameOverResult {
   boardConfig: BoardConfig
   gameOver: boolean
   winningPlayer?: PlayerSide
-  movesRecord: MoveRecord[]
 }
 
 export class InvalidMove extends Error {
@@ -36,19 +35,14 @@ interface MoveRecord {
 
 export class BoardEngine {
   private readonly staticBoardAnalyser: StaticBoardAnalyser
-  private readonly debug: boolean
   private readonly recordMoves: boolean
 
-  public constructor(board: BoardConfig, config?: { debug?: boolean; recordMoves?: boolean }) {
+  public constructor(board: BoardConfig, config?: { recordMoves?: boolean }) {
     this.staticBoardAnalyser = new StaticBoardAnalyser(board)
-    this.debug = config?.debug || false
     this.recordMoves = config?.recordMoves || false
   }
 
-  public makeMove(move: Move, boardConfig: BoardConfig): MoveResult {
-    if (this.debug) {
-      console.log(`Player '${move.player}' selected pocket (${move.pocketId})`)
-    }
+  public makeMove(move: MoveRequest, boardConfig: BoardConfig): MoveResult {
     this.validateMove(move, boardConfig)
 
     const { redistributionMovesRecord, currentPocketId, boardAfterRedistribution } = this.redistributeStones(
@@ -67,12 +61,12 @@ export class BoardEngine {
     const gameOverResult = this.checkGameOver(playingPlayer, boardAfterCapture)
     if (gameOverResult.gameOver) {
       return {
+        winningPlayer: gameOverResult.winningPlayer,
         nextTurnPlayer: playingPlayer, //non-important
         boardConfig: gameOverResult.boardConfig,
         gameOver: true,
         movesRecord: this.recordMoves ? redistributionMovesRecord
-          .concat(captureMovesRecord)
-          .concat(gameOverResult.movesRecord) : undefined,
+          .concat(captureMovesRecord) : undefined,
       }
     } else {
       const nextPlayerTurn = this.checkNextPlayerTurn(playingPlayer, currentPocketId)
@@ -87,7 +81,7 @@ export class BoardEngine {
     }
   }
 
-  private redistributeStones(move: Move, board: number[]) {
+  private redistributeStones(move: MoveRequest, board: number[]) {
     const newBoard = [...board]
     let currentPocketId = move.pocketId
     let remainingStones = newBoard[move.pocketId]
@@ -136,24 +130,38 @@ export class BoardEngine {
     const captureMovesRecord = [];
     if (this.staticBoardAnalyser.checkPocketOwnership(playingPlayer, currentPocketId)) {
       if (!this.staticBoardAnalyser.isPocketStore(currentPocketId)) {
-        if (newBoard[currentPocketId] === 1) {
-          const oppositeSitePocketId = this.staticBoardAnalyser.getOppositeSidePocketId(currentPocketId)
-          if (this.debug) {
-            console.log(
-              `Player '${playingPlayer}' move ended on empty pocket (${currentPocketId})\nCapturing pocket (${oppositeSitePocketId}) with ${newBoard[oppositeSitePocketId]} stones`
-            )
+        if (newBoard[currentPocketId] === 1) { // It was empty
+          const oppositeSitePocketId = this.staticBoardAnalyser.getOppositeSideStorePocketIndex(currentPocketId)
+          if (newBoard[oppositeSitePocketId] > 0) {
+            const storePocketIndex = this.staticBoardAnalyser.getSideStorePocketIndex(playingPlayer)
+
+            const capturedOpponentStones = newBoard[oppositeSitePocketId]
+            newBoard[oppositeSitePocketId] = 0
+            captureMovesRecord.push({
+              index: oppositeSitePocketId,
+              newStonesAmouns: 0,
+            })
+
+            newBoard[storePocketIndex] += capturedOpponentStones
+            captureMovesRecord.push({
+              index: storePocketIndex,
+              newStonesAmouns: newBoard[storePocketIndex],
+            })
+
+            const capturedPlayerStones = newBoard[currentPocketId]
+            newBoard[currentPocketId] = 0
+            captureMovesRecord.push({
+              index: currentPocketId,
+              newStonesAmouns: 0,
+            })
+
+            newBoard[storePocketIndex] += capturedPlayerStones
+            captureMovesRecord.push({
+              index: storePocketIndex,
+              newStonesAmouns: newBoard[storePocketIndex],
+            })
+
           }
-          const capturedStones = newBoard[oppositeSitePocketId]
-          newBoard[oppositeSitePocketId] = 0
-          captureMovesRecord.push({
-            index: oppositeSitePocketId,
-            newStonesAmouns: 0,
-          })
-          newBoard[currentPocketId] += capturedStones
-          captureMovesRecord.push({
-            index: currentPocketId,
-            newStonesAmouns: newBoard[currentPocketId],
-          })
         }
       }
     }
@@ -163,7 +171,7 @@ export class BoardEngine {
     }
   }
 
-  private validateMove(move: Move, newBoard: number[]) {
+  private validateMove(move: MoveRequest, newBoard: number[]) {
     if (!this.staticBoardAnalyser.checkPocketOwnership(move.player, move.pocketId)) {
       throw new InvalidMove(
         `Player '${move.player}' cannot select an opponent's pocket (${move.pocketId})`
@@ -185,35 +193,34 @@ export class BoardEngine {
     playingPlayer: PlayerSide,
     board: number[]
   ): GameOverResult {
-    const dynamicBoardAnalyser = new DynamicBoardAnalyser(board)
-    if (!dynamicBoardAnalyser.isGameOver()) {
+    const playerMovesDetector = new PlayerMovesDetector(playingPlayer)
+    if (!playerMovesDetector.isGameOver(board)) {
       return {
         boardConfig: board,
         winningPlayer: undefined,
-        gameOver: false,
-        movesRecord: []
+        gameOver: false
       }
     }
-    const gameOverMovesRecord: MoveRecord[] = []
+    // const gameOverMovesRecord: MoveRecord[] = []
     const opponentPlayer = getOppositePlayerSide(playingPlayer)
 
-    const playingPlayerStore = this.staticBoardAnalyser.getPlayerStorePocketIndex(playingPlayer)
-    const playingPlayerAvailablePlays = dynamicBoardAnalyser.getAvailableMovesForPlayer(playingPlayer)
-    playingPlayerAvailablePlays.forEach((index) => {
-      gameOverMovesRecord.push({ index: index, newStonesAmouns: 0 })
-      gameOverMovesRecord.push({ index: playingPlayerStore, newStonesAmouns: board[playingPlayerStore] + board[index] })
-      board[playingPlayerStore] += board[index]
-      board[index] = 0
-    })
+    const playingPlayerStore = this.staticBoardAnalyser.getSideStorePocketIndex(playingPlayer)
+    // const playingPlayerAvailablePlays = playerMovesDetector.getAvailableMovesForPlayer(board)
+    // playingPlayerAvailablePlays.forEach((index) => {
+    //   gameOverMovesRecord.push({ index: index, newStonesAmouns: 0 })
+    //   gameOverMovesRecord.push({ index: playingPlayerStore, newStonesAmouns: board[playingPlayerStore] + board[index] })
+    //   board[playingPlayerStore] += board[index]
+    //   board[index] = 0
+    // })
 
-    const opponentPlayerStore = this.staticBoardAnalyser.getPlayerStorePocketIndex(opponentPlayer)
-    const opponentPlayerAvailablePlays = dynamicBoardAnalyser.getAvailableMovesForPlayer(opponentPlayer)
-    opponentPlayerAvailablePlays.forEach((index) => {
-      gameOverMovesRecord.push({ index: index, newStonesAmouns: 0 })
-      gameOverMovesRecord.push({ index: opponentPlayerStore, newStonesAmouns: board[opponentPlayerStore] + board[index] })
-      board[opponentPlayerStore] += board[index]
-      board[index] = 0
-    })
+    const opponentPlayerStore = this.staticBoardAnalyser.getSideStorePocketIndex(opponentPlayer)
+    // const opponentPlayerAvailablePlays = playerMovesDetector.getAvailableMovesForOpponentPlayer(board)
+    // opponentPlayerAvailablePlays.forEach((index) => {
+    //   gameOverMovesRecord.push({ index: index, newStonesAmouns: 0 })
+    //   gameOverMovesRecord.push({ index: opponentPlayerStore, newStonesAmouns: board[opponentPlayerStore] + board[index] })
+    //   board[opponentPlayerStore] += board[index]
+    //   board[index] = 0
+    // })
 
     let winningPlayer: PlayerSide | undefined //DRAW
     if (board[playingPlayerStore] > board[opponentPlayerStore]) {
@@ -224,7 +231,6 @@ export class BoardEngine {
 
     return {
       gameOver: true,
-      movesRecord: gameOverMovesRecord,
       boardConfig: board,
       winningPlayer: winningPlayer
     }
