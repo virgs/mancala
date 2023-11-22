@@ -1,11 +1,12 @@
 import type { BoardConfig } from './BoardConfig'
+import { BoardMoveMaker } from './BoardMoveMaker'
 import { PlayerMovesAnalyser } from './PlayerMovesAnalyser'
 import { StaticBoardAnalyser } from './StaticBoardAnalyser'
 import { PlayerSide, getOppositePlayerSide } from './player/PlayerSide'
 
 export interface MoveRequest {
-    player: PlayerSide
-    pocketId: number
+    playerSide: PlayerSide
+    pitId: number
 }
 
 export interface MoveResult {
@@ -31,7 +32,7 @@ export class InvalidMove extends Error {
 
 interface MoveRecord {
     index: number
-    newStonesAmouns: number
+    seedsAmount: number
 }
 
 type EngineSettings = {
@@ -39,22 +40,26 @@ type EngineSettings = {
     gameOverCaptureVariation?: boolean
 }
 
+
 export class MancalaEngine {
     private readonly staticBoardAnalyser: StaticBoardAnalyser
     private readonly engineSettings: Partial<EngineSettings>
+    private readonly movesHistory: MoveRequest[]
 
     public constructor(board: BoardConfig, settings?: Partial<EngineSettings>) {
         this.staticBoardAnalyser = new StaticBoardAnalyser(board)
+        this.movesHistory = []
         this.engineSettings = settings || {}
     }
 
     public makeMove(move: MoveRequest, boardConfig: BoardConfig): MoveResult {
         this.validateMove(move, boardConfig)
+        this.movesHistory.push(move);
 
         const { redistributionMovesRecord, currentPocketId, boardAfterRedistribution } =
-            this.redistributeStones(move, boardConfig)
+            this.redistributeSeeds(move, boardConfig)
 
-        const playingPlayer = move.player
+        const playingPlayer = move.playerSide
 
         const { captureMovesRecord, boardAfterCapture } = this.checkCapture(
             playingPlayer,
@@ -89,15 +94,15 @@ export class MancalaEngine {
         }
     }
 
-    private redistributeStones(move: MoveRequest, board: number[]) {
+    private redistributeSeeds(move: MoveRequest, board: number[]) {
         const newBoard = [...board]
-        let currentPocketId = move.pocketId
-        let remainingStones = newBoard[move.pocketId]
+        let currentPocketId = move.pitId
+        let remainingStones = newBoard[move.pitId]
         newBoard[currentPocketId] = 0
-        const redistributionMovesRecord = [
+        const redistributionMovesRecord: MoveRecord[] = [
             {
                 index: currentPocketId,
-                newStonesAmouns: 0,
+                seedsAmount: 0,
             },
         ]
 
@@ -105,14 +110,14 @@ export class MancalaEngine {
             currentPocketId = this.staticBoardAnalyser.getNextPocketId(currentPocketId)
             if (
                 this.staticBoardAnalyser.isPocketStore(currentPocketId) &&
-                !this.staticBoardAnalyser.checkPocketOwnership(move.player, currentPocketId)
+                !this.staticBoardAnalyser.checkPocketOwnership(move.playerSide, currentPocketId)
             ) {
                 continue
             }
             ++newBoard[currentPocketId]
             redistributionMovesRecord.push({
                 index: currentPocketId,
-                newStonesAmouns: newBoard[currentPocketId],
+                seedsAmount: newBoard[currentPocketId],
             })
             --remainingStones
         }
@@ -129,10 +134,12 @@ export class MancalaEngine {
     }
 
     private checkCapture(playingPlayer: PlayerSide, currentPocketId: number, board: number[]) {
+        const boardMoveMaker = new BoardMoveMaker(board)
         const newBoard = [...board]
-        const captureMovesRecord = []
+        const captureMovesRecord: MoveRecord[] = []
         if (this.staticBoardAnalyser.checkPocketOwnership(playingPlayer, currentPocketId)) {
             if (!this.staticBoardAnalyser.isPocketStore(currentPocketId)) {
+                // boardMoveMaker.getPitSeeds(currentPocketId)
                 if (newBoard[currentPocketId] === 1) {
                     // It was empty
                     const oppositeSitePocketId =
@@ -145,26 +152,26 @@ export class MancalaEngine {
                         newBoard[oppositeSitePocketId] = 0
                         captureMovesRecord.push({
                             index: oppositeSitePocketId,
-                            newStonesAmouns: 0,
+                            seedsAmount: 0,
                         })
 
                         newBoard[storePocketIndex] += capturedOpponentStones
                         captureMovesRecord.push({
                             index: storePocketIndex,
-                            newStonesAmouns: newBoard[storePocketIndex],
+                            seedsAmount: newBoard[storePocketIndex],
                         })
 
                         const capturedPlayerStones = newBoard[currentPocketId]
                         newBoard[currentPocketId] = 0
                         captureMovesRecord.push({
                             index: currentPocketId,
-                            newStonesAmouns: 0,
+                            seedsAmount: 0,
                         })
 
                         newBoard[storePocketIndex] += capturedPlayerStones
                         captureMovesRecord.push({
                             index: storePocketIndex,
-                            newStonesAmouns: newBoard[storePocketIndex],
+                            seedsAmount: newBoard[storePocketIndex],
                         })
                     }
                 }
@@ -177,19 +184,19 @@ export class MancalaEngine {
     }
 
     private validateMove(move: MoveRequest, newBoard: number[]) {
-        if (!this.staticBoardAnalyser.checkPocketOwnership(move.player, move.pocketId)) {
+        if (!this.staticBoardAnalyser.checkPocketOwnership(move.playerSide, move.pitId)) {
             throw new InvalidMove(
-                `Player '${move.player}' cannot select an opponent's pocket (${move.pocketId})`
+                `Player '${move.playerSide}' cannot select an opponent's pocket (${move.pitId})`
             )
         }
-        if (this.staticBoardAnalyser.isPocketStore(move.pocketId)) {
+        if (this.staticBoardAnalyser.isPocketStore(move.pitId)) {
             throw new InvalidMove(
-                `Player '${move.player}' cannot select a store (${move.pocketId})`
+                `Player '${move.playerSide}' cannot select a store (${move.pitId})`
             )
         }
-        if (newBoard[move.pocketId] === 0) {
+        if (newBoard[move.pitId] === 0) {
             throw new InvalidMove(
-                `Player '${move.player}' cannot select an empty pocket (${move.pocketId})`
+                `Player '${move.playerSide}' cannot select an empty pocket (${move.pitId})`
             )
         }
     }
@@ -238,10 +245,10 @@ export class MancalaEngine {
                     this.staticBoardAnalyser.checkPocketOwnership(playingPlayer, index) &&
                     index !== playingPlayerStore
                 ) {
-                    gameOverMovesRecord.push({ index: index, newStonesAmouns: 0 })
+                    gameOverMovesRecord.push({ index: index, seedsAmount: 0 })
                     gameOverMovesRecord.push({
                         index: playingPlayerStore,
-                        newStonesAmouns: board[playingPlayerStore] + board[index],
+                        seedsAmount: board[playingPlayerStore] + board[index],
                     })
                     board[playingPlayerStore] += board[index]
                     board[index] = 0
@@ -256,10 +263,10 @@ export class MancalaEngine {
                     this.staticBoardAnalyser.checkPocketOwnership(opponentPlayer, index) &&
                     index !== opponentPlayerStore
                 ) {
-                    gameOverMovesRecord.push({ index: index, newStonesAmouns: 0 })
+                    gameOverMovesRecord.push({ index: index, seedsAmount: 0 })
                     gameOverMovesRecord.push({
                         index: opponentPlayerStore,
-                        newStonesAmouns: board[opponentPlayerStore] + board[index],
+                        seedsAmount: board[opponentPlayerStore] + board[index],
                     })
                     board[opponentPlayerStore] += board[index]
                     board[index] = 0

@@ -7,32 +7,32 @@
         <div class="container-fluid px-5 plank-board">
             <div class="row g-2 h-100">
                 <div class="col">
-                    <Hole :stones="board[6]" :index="6" :playingPlayerSide="playingPlayer?.side" :store="true"
+                    <Pit :seeds="board[6]" :index="6" :playingPlayerSide="playingPlayer?.side" :store="true"
                         :ownerPlayerType="topPlayer.brain.type" @nextActionSelected="nextActionSelected"
                         :side="PlayerSide.TOP">
-                    </Hole>
+                    </Pit>
                 </div>
                 <div class="col-8">
                     <div class="row g-0 justify-content-center" style="height: 50%">
-                        <div v-for="(pocket, index) in topInternalPockets" class="col mx-auto">
-                            <Hole :stones="pocket" :index="topInternalPockets.length - 1 - index" :store="false"
+                        <div v-for="(pit, index) in topInternalPockets" class="col mx-auto">
+                            <Pit :seeds="pit" :index="topInternalPockets.length - 1 - index" :store="false"
                                 :ownerPlayerType="topPlayer.brain.type" @nextActionSelected="nextActionSelected"
-                                :playingPlayerSide="playingPlayer?.side" :side="PlayerSide.TOP"></Hole>
+                                :playingPlayerSide="playingPlayer?.side" :side="PlayerSide.TOP"></Pit>
                         </div>
                     </div>
                     <div class="row g-0 justify-content-center" style="height: 50%">
-                        <div v-for="(pocket, index) in bottomInternalPockets" class="col mx-auto">
-                            <Hole :stones="pocket" :index="index + bottomInternalPockets.length + 1"
+                        <div v-for="(pit, index) in bottomInternalPockets" class="col mx-auto">
+                            <Pit :seeds="pit" :index="index + bottomInternalPockets.length + 1"
                                 :ownerPlayerType="bottomPlayer.brain.type" :playingPlayerSide="playingPlayer?.side"
-                                :store="false" @nextActionSelected="nextActionSelected" :side="PlayerSide.BOTTOM"></Hole>
+                                :store="false" @nextActionSelected="nextActionSelected" :side="PlayerSide.BOTTOM"></Pit>
                         </div>
                     </div>
                 </div>
                 <div class="col">
-                    <Hole :stones="board[13]" :index="13" :playingPlayerSide="playingPlayer?.side" :store="true"
+                    <Pit :seeds="board[13]" :index="13" :playingPlayerSide="playingPlayer?.side" :store="true"
                         :ownerPlayerType="bottomPlayer.brain.type" @nextActionSelected="nextActionSelected"
                         :side="PlayerSide.BOTTOM">
-                    </Hole>
+                    </Pit>
                 </div>
             </div>
         </div>
@@ -45,7 +45,7 @@ import { MancalaEngine, type MoveRequest, type MoveResult } from '@/engine/Manca
 import { Player } from '@/engine/player/Player'
 import { PlayerSide } from '@/engine/player/PlayerSide'
 import { PlayerType } from '@/engine/player/PlayerType'
-import Hole from './Hole.vue'
+import Pit from './Pit.vue'
 
 let engine: MancalaEngine
 
@@ -53,7 +53,7 @@ export default {
     name: 'Mancala',
     props: ['gameSettings'],
     components: {
-        Hole,
+        Pit,
     },
     emits: ['animationIsRunning', 'aiIsThinking', 'gameOver', 'playingPlayer'],
     setup() {
@@ -73,6 +73,7 @@ export default {
         return {
             accumulator: 0,
             accumulatorColor: '',
+            lastSelectedPitIndex: undefined as undefined | number,
             animationRunning: false,
             board: board,
             playingPlayer: this.gameSettings.topPlayer as Player | undefined,
@@ -116,8 +117,8 @@ export default {
             const nextMoveIndex = await this.playingPlayer!.selectNextMove(this.board)
             this.$emit('aiIsThinking', false)
             this.updateBoard({
-                player: this.playingPlayer!.side,
-                pocketId: nextMoveIndex,
+                playerSide: this.playingPlayer!.side,
+                pitId: nextMoveIndex,
             })
         },
         sleep(sleepTime: number) {
@@ -126,8 +127,8 @@ export default {
         nextActionSelected(playerSide: PlayerSide, pocketId: number) {
             if (!this.animationRunning) {
                 this.updateBoard({
-                    player: playerSide,
-                    pocketId: pocketId,
+                    playerSide: playerSide,
+                    pitId: pocketId,
                 })
             }
         },
@@ -143,14 +144,14 @@ export default {
         },
         async updateBoard(nextAction: MoveRequest) {
             this.$emit('animationIsRunning', true)
-            this.updateAnimationColor(nextAction.player)
+            this.updateAnimationColor(nextAction.playerSide)
             this.animationRunning = true
             this.playingPlayer = undefined
-            this.accumulator = this.board[nextAction.pocketId]
+            this.accumulator = this.board[nextAction.pitId]
             const result = engine.makeMove(nextAction, this.board)
             const animation = [...result.movesRecord!]
             for (let move of animation) {
-                this.board[move.index] = move.newStonesAmouns
+                this.board[move.index] = move.seedsAmount
                 await this.sleep(this.gameSettings.animationSpeedInMs)
                 --this.accumulator
             }
@@ -230,3 +231,4 @@ export default {
     border-left: 1px solid var(--wooden-half-shade);
 }
 </style>
+pitIdpitIdpitIdplayerSideplayerSideplayerSidenewSeedAmount

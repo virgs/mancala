@@ -49,7 +49,7 @@ export class Minimax {
         if (availablePlays.length > 1 && this.maxDepth > 0) {
             availablePlays.reduce((bestScoreSoFar, moveIndex) => {
                 const result = this.engine.makeMove(
-                    { player: this.playerSide, pocketId: moveIndex },
+                    { playerSide: this.playerSide, pitId: moveIndex },
                     boardConfig
                 )
                 const playScore = this.evaluate(
@@ -98,7 +98,7 @@ export class Minimax {
 
             const bestValue = availableMoves.reduce((acc, index) => {
                 const result = this.engine.makeMove(
-                    { player: playingPlayerSide, pocketId: index },
+                    { playerSide: playingPlayerSide, pitId: index },
                     boardConfig
                 )
                 return Math.max(
@@ -113,7 +113,7 @@ export class Minimax {
                 this.playerMovesAnalyser.getAvailableMovesForOpponentPlayer(boardConfig)
             const worstValue = availableMoves.reduce((acc, index) => {
                 const result = this.engine.makeMove(
-                    { player: playingPlayerSide, pocketId: index },
+                    { playerSide: playingPlayerSide, pitId: index },
                     boardConfig
                 )
                 return Math.min(

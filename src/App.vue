@@ -1,11 +1,11 @@
 <template>
     <main>
-        <MancalaView :gameSettings="gameSettings" @gameOver="gameOver" />
+        <Board :gameSettings="gameSettings" @gameOver="gameOver" />
     </main>
 </template>
 
 <script setup lang="ts">
-import MancalaView from '@/components/Mancala.vue'
+import Board from '@/components/Board.vue'
 import { reactive } from 'vue'
 import { AiBrain } from './engine/ai/AiBrain'
 import { AiBrainLevel } from './engine/ai/AiBrainLevel'

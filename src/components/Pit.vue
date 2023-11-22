@@ -1,7 +1,7 @@
 <template>
     <div style="width: 100%; height: 100%; position: relative">
-        <span :class="holeClass" :style="holeStyle" @mouseenter="mouseOver" @mouseleave="mouseLeft" @click="click">
-            {{ stones }}
+        <span :class="pitClass" :style="pitStyle" @mouseenter="mouseOver" @mouseleave="mouseLeft" @click="click">
+            {{ seeds }}
         </span>
     </div>
 </template>
@@ -17,7 +17,7 @@ const props = defineProps<{
     store: boolean
     side: PlayerSide
     ownerPlayerType?: PlayerType
-    stones: number
+    seeds: number
     playingPlayerSide: PlayerSide | undefined
 }>()
 
@@ -37,7 +37,7 @@ const availableActionOption = ref(detectAvailableOption())
 function click() {
     if (!props.store) {
         if (props.ownerPlayerType === PlayerType.HUMAN) {
-            if (props.stones > 0) {
+            if (props.seeds > 0) {
                 if (props.side === props.playingPlayerSide) {
                     emit('nextActionSelected', props.side, props.index)
                 }
@@ -54,7 +54,7 @@ watch(
 )
 
 watch(
-    () => props.stones,
+    () => props.seeds,
     () => {
         stonesNumberChangedAnimation.value = true
         setTimeout(() => (stonesNumberChangedAnimation.value = false), 200)
@@ -65,7 +65,7 @@ watch(
 function detectAvailableOption() {
     return (
         props.ownerPlayerType === PlayerType.HUMAN &&
-        props.stones > 0 &&
+        props.seeds > 0 &&
         props.side === props.playingPlayerSide &&
         !props.store
     )
@@ -81,14 +81,14 @@ function mouseLeft() {
     availableActionOption.value = detectAvailableOption()
 }
 
-const holeClass = computed(() => ({
+const pitClass = computed(() => ({
     hole: true,
     stonesNumberChangedAnimation: stonesNumberChangedAnimation.value,
     availableOption: availableActionOption.value,
     hovered: mouseIsOver.value && availableActionOption.value,
 }))
 
-const holeStyle = computed(() => {
+const pitStyle = computed(() => {
     const playerColor =
         props.side === PlayerSide.BOTTOM ? 'var(--bottom-player-color)' : 'var(--top-player-color)'
     return {

@@ -18,19 +18,19 @@ export class StaticBoardAnalyser {
         return playerSide !== PlayerSide.TOP ? this.boardLength / 2 - 1 : this.boardLength - 1
     }
 
-    public getOppositeSidePocketIndex(currentPocketId: number): number {
-        return this.boardLength - 2 - currentPocketId
+    public getOppositeSidePocketIndex(pitId: number): number {
+        return this.boardLength - 2 - pitId
     }
 
-    public isPocketStore(pocketId: number): boolean {
-        return pocketId === this.boardLength / 2 - 1 || pocketId === this.boardLength - 1
+    public isPocketStore(pitId: number): boolean {
+        return pitId === this.boardLength / 2 - 1 || pitId === this.boardLength - 1
     }
 
-    public checkPocketOwnership(playerSide: PlayerSide, pocketId: number): boolean {
-        if (playerSide === PlayerSide.TOP && pocketId < this.boardLength / 2) {
+    public checkPocketOwnership(playerSide: PlayerSide, pitId: number): boolean {
+        if (playerSide === PlayerSide.TOP && pitId < this.boardLength / 2) {
             return true
         }
-        if (playerSide === PlayerSide.BOTTOM && pocketId >= this.boardLength / 2) {
+        if (playerSide === PlayerSide.BOTTOM && pitId >= this.boardLength / 2) {
             return true
         }
         return false
