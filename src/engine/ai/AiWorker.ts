@@ -6,7 +6,6 @@ export type SolverWorkerRequest = {
     playingPlayer: PlayerSide
     brainLevel: AiBrainLevel
     boardConfig: string
-    abort?: boolean
 }
 
 export type SolverWorkerResponse = {
@@ -17,13 +16,9 @@ export type SolverWorkerResponse = {
 let solver: Minimax
 
 self.onmessage = async (event: MessageEvent<SolverWorkerRequest>) => {
-    if (event.data.abort) {
-        solver.abort()
-    } else {
-        const request = event.data
-        const boardConfig = JSON.parse(request.boardConfig)
-        solver = new Minimax(request.brainLevel, request.playingPlayer, boardConfig)
-        const bestMove = await solver.selectBestMove(boardConfig)
-        self.postMessage({ bestPocketIdToPlay: bestMove })
-    }
+    const request = event.data
+    const boardConfig = JSON.parse(request.boardConfig)
+    solver = new Minimax(request.brainLevel, request.playingPlayer, boardConfig)
+    const bestMove = await solver.selectBestMove(boardConfig)
+    self.postMessage({ bestPocketIdToPlay: bestMove })
 }

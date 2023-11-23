@@ -9,27 +9,29 @@ export class BoardPrinter {
         this.showId = config?.showId || false
     }
 
-    public print(pockets: BoardConfig): void {
-        const topPlayerPockets = pockets.filter((_pocket, index) => index < pockets.length / 2)
-        const topPlayerInternalPocket = topPlayerPockets.filter((_pocket, index) => index < topPlayerPockets.length - 1)
-        const bottomPlayerPockets = pockets.filter((_pocket, index) => index >= pockets.length / 2)
-        const bottomPlayerInternalPocket = bottomPlayerPockets.filter(
-            (_pocket, index) => index < bottomPlayerPockets.length - 1
-        )
+    public print(board: BoardConfig): void {
+        const topPlayerPits = board
+            .filter((_, index) => index < board.length / 2)
+        const topPlayerInternalPits = topPlayerPits
+            .filter((_, index) => index < topPlayerPits.length - 1)
+        const bottomPlayerPits = board
+            .filter((_, index) => index >= board.length / 2)
+        const bottomPlayerInternalPits = bottomPlayerPits
+            .filter((_, index) => index < bottomPlayerPits.length - 1)
 
         console.log(
             this.emptySpaceGap +
-                topPlayerInternalPocket
-                    .reverse()
-                    .map((stones, index) => this.printHole(stones, pockets.length - index - 2))
-                    .join(this.emptySpaceGap)
+            topPlayerInternalPits
+                .reverse()
+                .map((stones, index) => this.printPit(stones, board.length - index - 2))
+                .join(this.emptySpaceGap)
         )
 
         console.log(
-            [topPlayerPockets[topPlayerPockets.length - 1], bottomPlayerPockets[bottomPlayerPockets.length - 1]]
-                .map((stones, index) => this.printHole(stones, pockets.length - (index * pockets.length) / 2 - 1))
+            [topPlayerPits[topPlayerPits.length - 1], bottomPlayerPits[bottomPlayerPits.length - 1]]
+                .map((seeds, index) => this.printPit(seeds, board.length - (index * board.length) / 2 - 1))
                 .join(
-                    Array.from(Array(topPlayerInternalPocket.length))
+                    Array.from(Array(topPlayerInternalPits.length))
                         .map(() => this.emptySpaceGap)
                         .join(this.emptySpaceGap)
                 )
@@ -37,14 +39,14 @@ export class BoardPrinter {
 
         console.log(
             this.emptySpaceGap +
-                bottomPlayerInternalPocket
-                    .map((stones, index) => this.printHole(stones, index))
-                    .join(this.emptySpaceGap)
+            bottomPlayerInternalPits
+                .map((seeds, index) => this.printPit(seeds, index))
+                .join(this.emptySpaceGap)
         )
     }
 
-    private printHole(stones: number, id: number): string {
-        let text = stones.toString().padStart(2)
+    private printPit(seeds: number, id: number): string {
+        let text = seeds.toString().padStart(2)
         if (this.showId) {
             text += `(${id})`.padStart(4)
         }

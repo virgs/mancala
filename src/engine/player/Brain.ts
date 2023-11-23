@@ -6,4 +6,5 @@ export interface Brain {
     type: PlayerType
 
     selectNextMove(playingPlayer: PlayerSide, boardConfig: BoardConfig): Promise<number>
+    getLabel(): string
 }

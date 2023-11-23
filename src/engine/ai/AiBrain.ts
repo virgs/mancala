@@ -7,7 +7,7 @@ import type { PlayerSide } from '../player/PlayerSide'
 import { AiBrainLevel } from './AiBrainLevel'
 
 export class AiBrain implements Brain {
-    private readonly brainLevel: AiBrainLevel
+    readonly brainLevel: AiBrainLevel
     private readonly aiWorker = new AiWorker()
 
     type = PlayerType.AI
@@ -26,5 +26,9 @@ export class AiBrain implements Brain {
                 boardConfig: JSON.stringify(boardConfig),
             } as SolverWorkerRequest)
         })
+    }
+
+    public getLabel(): string {
+        return AiBrainLevel[this.brainLevel]
     }
 }

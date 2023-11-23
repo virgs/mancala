@@ -1,7 +1,7 @@
 import type { BoardConfig } from '../BoardConfig'
 import { MancalaEngine } from '../MancalaEngine'
 import { PlayerMovesAnalyser } from '../PlayerMovesAnalyser'
-import type { PlayerSide } from '../player/PlayerSide'
+import { getOppositePlayerSide, type PlayerSide } from '../player/PlayerSide'
 import { AiBrainLevel } from './AiBrainLevel'
 
 export class Minimax {
@@ -11,11 +11,9 @@ export class Minimax {
     private readonly engine: MancalaEngine
     private readonly playerMovesAnalyser: PlayerMovesAnalyser
     private movesAnalysed: number
-    private aborted: boolean
 
     public constructor(aiBainLevel: AiBrainLevel, playerSide: PlayerSide, board: BoardConfig) {
         this.aiBainLevel = aiBainLevel;
-        this.aborted = false
         this.movesAnalysed = 0
         this.playerMovesAnalyser = new PlayerMovesAnalyser(playerSide)
         this.engine = new MancalaEngine(board)
@@ -32,13 +30,9 @@ export class Minimax {
                 this.maxDepth = 3
                 break
             case AiBrainLevel.HARDCORE:
-                this.maxDepth = 10
+                this.maxDepth = 9
                 break
         }
-    }
-
-    public abort(): void {
-        this.aborted = true
     }
 
     public async selectBestMove(boardConfig: BoardConfig): Promise<number> {
@@ -80,33 +74,40 @@ export class Minimax {
         }
 
         if (playingPlayerSide === this.playerSide) {
-            // Maximizing
-            let maxScore = -Infinity
-            const availableMoves = this.playerMovesAnalyser.getAvailableMovesForPlayer(boardConfig)
-            for (let moveIndex of availableMoves) {
-                const moveMade = this.engine.makeMove({ playerSide: playingPlayerSide, pitId: moveIndex }, boardConfig)
-                const evalScore = this.evaluate(moveMade.boardConfig, depth + 1, alphaMax, betaMin, moveMade.nextTurnPlayer)
-                maxScore = Math.max(maxScore, evalScore)
-                alphaMax = Math.max(alphaMax, evalScore)
-                if (betaMin <= alphaMax) {
-                    break
-                }
-            }
-            return maxScore;
+            return this.maximize(boardConfig, depth, alphaMax, betaMin);
         } else {
-            // if (playingPlayer === this.identifier)  // Minimizing
-            let minScore = Infinity
-            const availableMoves = this.playerMovesAnalyser.getAvailableMovesForOpponentPlayer(boardConfig)
-            for (let moveIndex of availableMoves) {
-                const moveMade = this.engine.makeMove({ playerSide: playingPlayerSide, pitId: moveIndex }, boardConfig)
-                const result = this.evaluate(moveMade.boardConfig, depth + 1, alphaMax, betaMin, moveMade.nextTurnPlayer)
-                minScore = Math.min(minScore, result)
-                betaMin = Math.min(betaMin, result)
-                if (betaMin <= alphaMax) {
-                    break
-                }
-            }
-            return minScore;
+            return this.minimize(boardConfig, depth, alphaMax, betaMin);
         }
     }
+
+    private maximize(boardConfig: BoardConfig, depth: number, alphaMax: number, betaMin: number): number {
+        let maxScore = -Infinity
+        const availableMoves = this.playerMovesAnalyser.getAvailableMovesForPlayer(boardConfig)
+        for (let moveIndex of availableMoves) {
+            const moveMade = this.engine.makeMove({ playerSide: this.playerSide, pitId: moveIndex }, boardConfig)
+            const evalScore = this.evaluate(moveMade.boardConfig, depth + 1, alphaMax, betaMin, moveMade.nextTurnPlayer)
+            maxScore = Math.max(maxScore, evalScore)
+            alphaMax = Math.max(alphaMax, evalScore)
+            if (betaMin <= alphaMax) {
+                break
+            }
+        }
+        return maxScore;
+    }
+
+    private minimize(boardConfig: BoardConfig, depth: number, alphaMax: number, betaMin: number): number {
+        let minScore = Infinity
+        const availableMoves = this.playerMovesAnalyser.getAvailableMovesForOpponentPlayer(boardConfig)
+        for (let moveIndex of availableMoves) {
+            const moveMade = this.engine.makeMove({ playerSide: getOppositePlayerSide(this.playerSide), pitId: moveIndex }, boardConfig)
+            const result = this.evaluate(moveMade.boardConfig, depth + 1, alphaMax, betaMin, moveMade.nextTurnPlayer)
+            minScore = Math.min(minScore, result)
+            betaMin = Math.min(betaMin, result)
+            if (betaMin <= alphaMax) {
+                break
+            }
+        }
+        return minScore;
+    }
+
 }

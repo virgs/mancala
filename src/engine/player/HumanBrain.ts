@@ -9,4 +9,9 @@ export class HumanBrain implements Brain {
     selectNextMove(playingPlayer: PlayerSide, boardConfig: BoardConfig): Promise<number> {
         throw new Error('Human brain should read next move from input')
     }
+
+    public getLabel(): string {
+        return 'Human'
+    }
+
 }

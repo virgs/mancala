@@ -4,11 +4,14 @@
         <span v-if="animationRunning && accumulator >= 0" :class="accumulatorClass" :style="accumulatorStyle">
             <span class="accumulatorNumber number">{{ accumulator }}</span>
         </span>
+        <div v-if="aiIsThinking" class="spinner-border" :style="spinningStyle" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
         <div class="container-fluid px-5 plank-board">
             <div class="row g-2 h-100">
                 <div class="col">
-                    <Pit :seeds="board[6]" :index="6" :playingPlayerSide="playingPlayer?.side" :store="true"
-                        :ownerPlayerType="topPlayer.brain.type" @nextActionSelected="nextActionSelected"
+                    <Pit :seeds="board[topSideStorePit]" :index="topSideStorePit" :playingPlayerSide="playingPlayer?.side"
+                        :store="true" :ownerPlayerType="topPlayer?.brain.type" @nextActionSelected="nextActionSelected"
                         :side="PlayerSide.TOP">
                     </Pit>
                 </div>
@@ -16,7 +19,7 @@
                     <div class="row g-0 justify-content-center" style="height: 50%">
                         <div v-for="(pit, index) in topInternalPockets" class="col mx-auto">
                             <Pit :seeds="pit" :index="topInternalPockets.length - 1 - index" :store="false"
-                                :lastSelectedPitId="lastSelectedPitId" :ownerPlayerType="topPlayer.brain.type"
+                                :lastSelectedPitId="lastSelectedPitId" :ownerPlayerType="topPlayer?.brain.type"
                                 @nextActionSelected="nextActionSelected" :playingPlayerSide="playingPlayer?.side"
                                 :side="PlayerSide.TOP"></Pit>
                         </div>
@@ -24,16 +27,16 @@
                     <div class="row g-0 justify-content-center" style="height: 50%">
                         <div v-for="(pit, index) in bottomInternalPockets" class="col mx-auto">
                             <Pit :seeds="pit" :index="index + bottomInternalPockets.length + 1"
-                                :lastSelectedPitId="lastSelectedPitId" :ownerPlayerType="bottomPlayer.brain.type"
+                                :lastSelectedPitId="lastSelectedPitId" :ownerPlayerType="bottomPlayer?.brain.type"
                                 :playingPlayerSide="playingPlayer?.side" :store="false"
                                 @nextActionSelected="nextActionSelected" :side="PlayerSide.BOTTOM"></Pit>
                         </div>
                     </div>
                 </div>
                 <div class="col">
-                    <Pit :seeds="board[13]" :index="13" :playingPlayerSide="playingPlayer?.side" :store="true"
-                        :ownerPlayerType="bottomPlayer.brain.type" @nextActionSelected="nextActionSelected"
-                        :side="PlayerSide.BOTTOM">
+                    <Pit :seeds="board[bottomSideStorePit]" :index="bottomSideStorePit"
+                        :playingPlayerSide="playingPlayer?.side" :store="true" :ownerPlayerType="bottomPlayer?.brain.type"
+                        @nextActionSelected="nextActionSelected" :side="PlayerSide.BOTTOM">
                     </Pit>
                 </div>
             </div>
@@ -42,50 +45,68 @@
 </template>
 
 <script lang="ts">
-import { createBoard } from '@/engine/BoardConfig'
+import { createBoard, type BoardConfig } from '@/engine/BoardConfig'
 import { MancalaEngine, type MoveRequest, type MoveResult } from '@/engine/MancalaEngine'
 import { Player } from '@/engine/player/Player'
 import { PlayerSide } from '@/engine/player/PlayerSide'
 import { PlayerType } from '@/engine/player/PlayerType'
 import Pit from './Pit.vue'
+import { BoardPrinter } from '@/engine/BoardPrinter'
+import { StaticBoardAnalyser } from '@/engine/StaticBoardAnalyser'
 
 let engine: MancalaEngine
 
 export default {
     name: 'Mancala',
-    props: ['gameSettings'],
+    props: ['internalPockets', 'initialStones', 'topPlayer', 'bottomPlayer', 'animationSpeed', 'gameIsRunning'],
     components: {
-        Pit,
+        Pit
     },
-    emits: ['animationIsRunning', 'aiIsThinking', 'gameOver', 'playingPlayer'],
+    emits: ['animationIsRunning', 'gameOver', 'playingPlayer'],
     setup() {
         return {
             PlayerSide,
         }
     },
     data() {
-        const board = createBoard(this.gameSettings.internalPockets, this.gameSettings.initialStones)
-        engine = new MancalaEngine(board, {
-            recordMoves: true,
-        })
-
         return {
+            aiIsThinking: false,
             accumulator: 0,
             accumulatorColor: '',
             lastSelectedPitId: undefined as undefined | number,
             animationRunning: false,
-            board: board,
-            playingPlayer: this.gameSettings.topPlayer as Player | undefined,
-            topPlayer: this.gameSettings.topPlayer as Player,
-            bottomPlayer: this.gameSettings.bottomPlayer as Player,
+            board: createBoard(6, 4) as BoardConfig,
+            playingPlayer: undefined as Player | undefined,
         }
     },
-    mounted() {
-        if (this.playingPlayer?.brain.type !== PlayerType.HUMAN) {
-            this.aiThinkAboutNextMove()
+    watch: {
+        gameIsRunning() {
+            if (this.gameIsRunning) {
+                this.playingPlayer = this.topPlayer
+
+                this.board = createBoard(this.internalPockets, this.initialStones)
+                engine = new MancalaEngine(this.board, {
+                    recordMoves: true,
+                })
+
+                if (this.playingPlayer?.brain.type !== PlayerType.HUMAN) {
+                    this.aiThinkAboutNextMove()
+                }
+            }
         }
     },
     computed: {
+        bottomSideStorePit() {
+            return new StaticBoardAnalyser(this.board).getSideStorePitId(PlayerSide.BOTTOM)
+        },
+        topSideStorePit() {
+            return new StaticBoardAnalyser(this.board).getSideStorePitId(PlayerSide.TOP)
+        },
+        spinningStyle() {
+            return {
+                color: this.playingPlayer?.side === PlayerSide.TOP ? 'var(--top-player-color)' : 'var(--bottom-player-color)'
+            }
+        },
         accumulatorClass() {
             return {
                 'd-block': true,
@@ -112,9 +133,9 @@ export default {
     },
     methods: {
         async aiThinkAboutNextMove() {
-            this.$emit('aiIsThinking', true)
+            this.aiIsThinking = true
             const nextMoveIndex = await this.playingPlayer!.selectNextMove(this.board)
-            this.$emit('aiIsThinking', false)
+            this.aiIsThinking = false
             this.updateBoard({
                 playerSide: this.playingPlayer!.side,
                 pitId: nextMoveIndex,
@@ -152,7 +173,7 @@ export default {
             const animation = [...result.movesRecord!]
             for (let move of animation) {
                 this.board[move.pitId] = move.seeds
-                await this.sleep(this.gameSettings.animationSpeedInMs)
+                await this.sleep(this.animationSpeed)
                 --this.accumulator
             }
             this.finishUpdatingBoard(result)
@@ -161,6 +182,7 @@ export default {
             this.animationRunning = false
             this.$emit('animationIsRunning', false)
             if (actionResult.gameOver) {
+                new BoardPrinter().print(this.board)
                 this.$emit('gameOver', {
                     winningPlayer: actionResult.winningPlayer,
                     movesHistory: engine.getMovesHistory()
@@ -190,6 +212,15 @@ export default {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+}
+
+.spinner-border {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    border-width: thick;
+    width: 3rem;
+    height: 3rem;
 }
 
 .plank-board {
