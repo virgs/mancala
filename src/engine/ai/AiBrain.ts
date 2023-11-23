@@ -19,7 +19,7 @@ export class AiBrain implements Brain {
     public async selectNextMove(playingPlayerSide: PlayerSide, boardConfig: BoardConfig): Promise<number> {
         return new Promise((resolve) => {
             this.aiWorker.onmessage = async (event: MessageEvent<SolverWorkerResponse>) =>
-                resolve(event.data.bestPocketIdToPlay[0])
+                resolve(event.data.bestPocketIdToPlay)
             this.aiWorker.postMessage({
                 playingPlayer: playingPlayerSide,
                 brainLevel: this.brainLevel,

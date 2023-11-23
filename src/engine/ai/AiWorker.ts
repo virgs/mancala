@@ -10,7 +10,7 @@ export type SolverWorkerRequest = {
 }
 
 export type SolverWorkerResponse = {
-    bestPocketIdToPlay: number[]
+    bestPocketIdToPlay: number
     error?: Error
 }
 
