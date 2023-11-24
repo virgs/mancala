@@ -16,7 +16,7 @@
                         <font-awesome-icon icon="fa-solid fa-bolt" style="margin: 10px" />
                     </div>
                 </div>
-                <div class="col-6 col-sm-3 d-flex justify-content-end">
+                <div class="col-6 col-sm-3 col-lg-4 d-flex justify-content-end">
                     <button v-if="gameIsRunning" @click="stopGame" class="btn btn-sm btn-danger">
                         <span class="text">
                             Stop
