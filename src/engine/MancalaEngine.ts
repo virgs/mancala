@@ -4,6 +4,12 @@ import { PlayerMovesAnalyser } from './PlayerMovesAnalyser'
 import { StaticBoardAnalyser } from './StaticBoardAnalyser'
 import { PlayerSide, getOppositePlayerSide } from './player/PlayerSide'
 
+export type EndGameResult = {
+    winningPlayer: PlayerSide;
+    movesHistory: MoveHistory[],
+    board: BoardConfig
+};
+
 export interface MoveRequest {
     playerSide: PlayerSide
     pitId: number
@@ -69,9 +75,9 @@ export class MancalaEngine {
                 gameOver: true,
                 movesRecord: this.engineSettings.recordMoves
                     ? redistribution
-                          .getMovesRecord()
-                          .concat(capture.getMovesRecord())
-                          .concat(gameOverResult.gameOverMovesRecord)
+                        .getMovesRecord()
+                        .concat(capture.getMovesRecord())
+                        .concat(gameOverResult.gameOverMovesRecord)
                     : undefined,
             }
         } else {
@@ -107,7 +113,7 @@ export class MancalaEngine {
         return boardMoveMaker
     }
 
-    public getMovesHistory(): MoveRequest[] {
+    public getMovesHistory(): MoveHistory[] {
         return this.movesHistory
     }
 

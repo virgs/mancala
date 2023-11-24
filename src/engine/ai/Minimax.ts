@@ -34,7 +34,6 @@ export class Minimax {
 
     public async selectBestMove(boardConfig: BoardConfig): Promise<number> {
         this.movesAnalysed = 0
-        console.log('thinking')
 
         const availablePlays = this.playerMovesAnalyser.getAvailableMovesForPlayer(boardConfig)
         let choosenActionIndex = availablePlays[availablePlays.length - 1]
@@ -50,8 +49,6 @@ export class Minimax {
                 return bestScoreSoFar
             }, -Infinity)
         }
-
-        console.log('done thinking', AiBrainLevel[this.aiBainLevel], this.movesAnalysed)
 
         return choosenActionIndex
     }

@@ -1,22 +1,22 @@
 <template>
     <nav class="navbar w-100 border-bottom border-body" style="background-color: var(--nav-bar-color); max-height: 15vh;">
-        <div class="container-fluid m-0 p-0">
+        <div class="container-fluid">
             <div class="row w-100 g-1 justify-content-between">
-                <div class="col-6 col-lg-4">
+                <div class="col-12 col-sm-6 col-lg-4" style="text-align: center;">
                     <BrainSelector :side="PlayerSide.TOP" :gameIsRunning="gameIsRunning" @brainSelected="brainSelected">
                     </BrainSelector>
                     <img src="@/assets/VS.svg" class="img-fluid" alt="versus" style="width: 2.5em !important" />
                     <BrainSelector :side="PlayerSide.BOTTOM" :gameIsRunning="gameIsRunning" @brainSelected="brainSelected">
                     </BrainSelector>
                 </div>
-                <div class="col-3 col-lg-4">
+                <div class="col-6 col-sm-3 col-lg-4">
                     <div class="d-flex" style="color: var(--vt-c-black-mute);">
                         <input type="range" class="form-range range-cust" :min="animationInterval.min" :step="200"
                             :max="animationInterval.max" v-model="animationDelay" style="margin: 5px;" />
                         <font-awesome-icon icon="fa-solid fa-bolt" style="margin: 10px" />
                     </div>
                 </div>
-                <div class="col-3 col-lg-4 d-flex justify-content-end">
+                <div class="col-6 col-sm-3 d-flex justify-content-end">
                     <button v-if="gameIsRunning" @click="stopGame" class="btn btn-sm btn-danger">
                         <span class="text">
                             Stop

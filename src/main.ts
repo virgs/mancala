@@ -1,4 +1,3 @@
-import { useScreenOrientation } from '@vueuse/core'
 import './assets/main.css'
 
 import { createApp } from 'vue'
@@ -19,8 +18,3 @@ library.add(faBrain, faRobot, faBolt, faPlay, faStop, faHourglass)
 const app = createApp(App)
 app.component('font-awesome-icon', FontAwesomeIcon)
 app.mount('#app')
-
-const { isSupported, orientation, angle, lockOrientation } = useScreenOrientation()
-
-console.log(isSupported.value, orientation.value, angle.value)
-lockOrientation('landscape')

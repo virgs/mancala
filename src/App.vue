@@ -4,24 +4,27 @@
             :animationSpeed="animationSpeed" @animationSpeedChanged="animationSpeedChanged"></NavBar>
         <Board :gameIsRunning="gameIsRunning" :internalPockets="internalPockets" :initialStones="initialStones"
             :topPlayer="topPlayer" :bottomPlayer="bottomPlayer" :animationSpeed="animationSpeed" @gameOver="gameOver" />
+        <GameOver :result="gameOverResult" @modalIsGone="gameOverModalIsGone"></GameOver>
     </main>
 </template>
 
 <script lang="ts">
 import Board from '@/components/Board.vue'
+import GameOver from '@/components/GameOver.vue'
 import NavBar from './components/NavBar.vue'
-import type { MoveRequest } from './engine/MancalaEngine'
+import type { EndGameResult } from './engine/MancalaEngine'
 import { Player } from './engine/player/Player'
-import { PlayerSide } from './engine/player/PlayerSide'
 
 export default {
     name: 'App',
     components: {
         NavBar,
         Board,
+        GameOver
     },
     data() {
         return {
+            gameOverResult: undefined as undefined | EndGameResult,
             gameIsRunning: false,
             internalPockets: 6,
             initialStones: 4,
@@ -31,14 +34,11 @@ export default {
         }
     },
     methods: {
-        gameOver(result: { winningPlayer: PlayerSide; movesHistory: MoveRequest[] }) {
+        gameOver(result: EndGameResult) {
+            this.gameOverResult = result;
+        },
+        gameOverModalIsGone() {
             this.gameIsRunning = false
-            if (result.winningPlayer) {
-                console.log('Player ' + result.winningPlayer + ' won')
-            } else {
-                console.log('It was a DRAW')
-            }
-            console.log('History', result.movesHistory)
         },
         startGame(settings: { topPlayer: Player; bottomPlayer: Player; animationSpeed: number }) {
             this.gameIsRunning = true

@@ -46,13 +46,14 @@
 
 <script lang="ts">
 import { createBoard, type BoardConfig } from '@/engine/BoardConfig'
-import { MancalaEngine, type MoveRequest, type MoveResult } from '@/engine/MancalaEngine'
+import { MancalaEngine, type EndGameResult, type MoveRequest, type MoveResult } from '@/engine/MancalaEngine'
 import { Player } from '@/engine/player/Player'
 import { PlayerSide } from '@/engine/player/PlayerSide'
 import { PlayerType } from '@/engine/player/PlayerType'
 import Pit from './Pit.vue'
 import { BoardPrinter } from '@/engine/BoardPrinter'
 import { StaticBoardAnalyser } from '@/engine/StaticBoardAnalyser'
+import { PlayerMovesAnalyser } from '@/engine/PlayerMovesAnalyser'
 
 let engine: MancalaEngine
 
@@ -93,7 +94,6 @@ export default {
                     this.aiThinkAboutNextMove()
                 }
             } else {
-                this.board = createBoard(6, 4)
                 this.lastSelectedPitId = undefined
                 this.animationRunning = false;
                 this.accumulator = 0
@@ -194,11 +194,11 @@ export default {
             this.animationRunning = false
             this.$emit('animationIsRunning', false)
             if (actionResult.gameOver) {
-                new BoardPrinter().print(this.board)
                 this.$emit('gameOver', {
                     winningPlayer: actionResult.winningPlayer,
                     movesHistory: engine.getMovesHistory(),
-                })
+                    board: this.board
+                } as EndGameResult)
             } else {
                 this.playingPlayer = this.getBrainFromSide(actionResult.nextTurnPlayer!)
                 this.$emit('playingPlayerChanged', this.playingPlayer)

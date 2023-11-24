@@ -67,7 +67,7 @@ export default {
                 textAlign: 'left',
                 border: 'none'
             }
-            if (this.side === PlayerSide.TOP) {
+            if (this.side === PlayerSide.BOTTOM) {
                 style.color = 'var(--bottom-player-color)'
                 style.direction = 'rtl'
                 style.textAlign = 'right'
