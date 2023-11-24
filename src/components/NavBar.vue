@@ -2,7 +2,7 @@
     <nav class="navbar w-100 border-bottom border-body" style="background-color: var(--nav-bar-color); max-height: 15vh;">
         <div class="container-fluid">
             <div class="row w-100 g-1 justify-content-between">
-                <div class="col-12 col-sm-6 col-lg-4" style="text-align: center;">
+                <div class="col-12 col-sm-6 col-lg-4" style="text-align: center; white-space:nowrap;">
                     <BrainSelector :side="PlayerSide.TOP" :gameIsRunning="gameIsRunning" @brainSelected="brainSelected">
                     </BrainSelector>
                     <img src="@/assets/VS.svg" class="img-fluid" alt="versus" style="width: 2.5em !important" />
