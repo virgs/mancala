@@ -61,7 +61,7 @@ export default {
             return getAiBrainLevels.map((text) => this.aiBrainLabel(text))
         },
         labelText() {
-            const style = {
+            const style: any = {
                 color: 'var(--top-player-color)',
                 direction: 'ltr',
                 textAlign: 'left',
@@ -73,12 +73,6 @@ export default {
                 style.textAlign = 'right'
             }
             return style;
-            // return {
-            //     color: this.side === PlayerSide.TOP ? 'var(--top-player-color)' : 'var(--bottom-player-color)',
-            //     direction: this.side === PlayerSide.TOP ? 'ltr' : 'rtl',
-            //     'text-align': this.side === PlayerSide.TOP ? 'left' : 'right',
-            //     border: 'none'
-            // }
         }
     },
     methods: {
