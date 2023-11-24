@@ -13,5 +13,4 @@ export class HumanBrain implements Brain {
     public getLabel(): string {
         return 'Human'
     }
-
 }

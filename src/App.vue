@@ -1,9 +1,20 @@
 <template>
     <main>
-        <NavBar :gameIsRunning="gameIsRunning" @startGame="startGame" @abortGame="abortGame"
-            @animationSpeedChanged="animationSpeedChanged"></NavBar>
-        <Board :gameIsRunning="gameIsRunning" :internalPockets="internalPockets" :initialStones="initialStones"
-            :topPlayer="topPlayer" :bottomPlayer="bottomPlayer" :animationSpeed="animationSpeed" @gameOver="gameOver" />
+        <NavBar
+            :gameIsRunning="gameIsRunning"
+            @startGame="startGame"
+            @abortGame="abortGame"
+            @animationSpeedChanged="animationSpeedChanged"
+        ></NavBar>
+        <Board
+            :gameIsRunning="gameIsRunning"
+            :internalPockets="internalPockets"
+            :initialStones="initialStones"
+            :topPlayer="topPlayer"
+            :bottomPlayer="bottomPlayer"
+            :animationSpeed="animationSpeed"
+            @gameOver="gameOver"
+        />
     </main>
 </template>
 
@@ -17,12 +28,13 @@ import { PlayerSide } from './engine/player/PlayerSide'
 export default {
     name: 'App',
     components: {
-        NavBar, Board
+        NavBar,
+        Board,
     },
     data() {
         return {
             gameIsRunning: false,
-            internalPockets: 7,
+            internalPockets: 6,
             initialStones: 4,
             animationSpeed: 500,
             topPlayer: undefined as Player | undefined,
@@ -30,7 +42,7 @@ export default {
         }
     },
     methods: {
-        gameOver(result: { winningPlayer: PlayerSide, movesHistory: MoveRequest[] }) {
+        gameOver(result: { winningPlayer: PlayerSide; movesHistory: MoveRequest[] }) {
             this.gameIsRunning = false
             if (result.winningPlayer) {
                 console.log('Player ' + result.winningPlayer + ' won')
@@ -39,25 +51,20 @@ export default {
             }
             console.log('History', result.movesHistory)
         },
-        startGame(settings: {
-            topPlayer: Player,
-            bottomPlayer: Player,
-            animationSpeed: number
-        }) {
+        startGame(settings: { topPlayer: Player; bottomPlayer: Player; animationSpeed: number }) {
             this.gameIsRunning = true
             this.topPlayer = settings.topPlayer
             this.bottomPlayer = settings.bottomPlayer
             this.animationSpeed = settings.animationSpeed
         },
         abortGame() {
-            this.gameIsRunning = false;
+            this.gameIsRunning = false
             this.topPlayer = undefined
             this.bottomPlayer = undefined
         },
         animationSpeedChanged(animationSpeed: number) {
             this.animationSpeed = animationSpeed
-        }
-    }
+        },
+    },
 }
-
 </script>

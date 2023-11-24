@@ -21,8 +21,8 @@ export class PlayerMovesAnalyser {
         const staticBoardAnalyser = new StaticBoardAnalyser(boardConfig)
         return boardConfig.reduce((acc, stones, pocketId) => {
             if (
-                staticBoardAnalyser.checkPocketOwnership(this.playerSide, pocketId) &&
-                !staticBoardAnalyser.isPocketStore(pocketId) &&
+                staticBoardAnalyser.checkPitOwnership(this.playerSide, pocketId) &&
+                !staticBoardAnalyser.isPitStore(pocketId) &&
                 stones > 0
             ) {
                 acc.push(pocketId)
@@ -35,8 +35,8 @@ export class PlayerMovesAnalyser {
         const staticBoardAnalyser = new StaticBoardAnalyser(boardConfig)
         return boardConfig.reduce((acc, stones, pocketId) => {
             if (
-                staticBoardAnalyser.checkPocketOwnership(getOppositePlayerSide(this.playerSide), pocketId) &&
-                !staticBoardAnalyser.isPocketStore(pocketId) &&
+                staticBoardAnalyser.checkPitOwnership(getOppositePlayerSide(this.playerSide), pocketId) &&
+                !staticBoardAnalyser.isPitStore(pocketId) &&
                 stones > 0
             ) {
                 acc.push(pocketId)

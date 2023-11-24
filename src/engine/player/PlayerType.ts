@@ -3,6 +3,4 @@ export enum PlayerType {
     AI,
 }
 
-export const getPlayerTypes = Object
-    .keys(PlayerType)
-    .filter((item) => isNaN(Number(item)));
+export const getPlayerTypes = Object.keys(PlayerType).filter((item) => isNaN(Number(item)))

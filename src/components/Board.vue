@@ -60,9 +60,9 @@ export default {
     name: 'Mancala',
     props: ['internalPockets', 'initialStones', 'topPlayer', 'bottomPlayer', 'animationSpeed', 'gameIsRunning'],
     components: {
-        Pit
+        Pit,
     },
-    emits: ['animationIsRunning', 'gameOver', 'playingPlayer'],
+    emits: ['animationIsRunning', 'gameOver', 'playingPlayerChanged'],
     setup() {
         return {
             PlayerSide,
@@ -92,8 +92,14 @@ export default {
                 if (this.playingPlayer?.brain.type !== PlayerType.HUMAN) {
                     this.aiThinkAboutNextMove()
                 }
+            } else {
+                this.board = createBoard(6, 4)
+                this.lastSelectedPitId = undefined
+                this.animationRunning = false;
+                this.accumulator = 0
+                this.playingPlayer = undefined
             }
-        }
+        },
     },
     computed: {
         bottomSideStorePit() {
@@ -104,7 +110,10 @@ export default {
         },
         spinningStyle() {
             return {
-                color: this.playingPlayer?.side === PlayerSide.TOP ? 'var(--top-player-color)' : 'var(--bottom-player-color)'
+                color:
+                    this.playingPlayer?.side === PlayerSide.TOP
+                        ? 'var(--top-player-color)'
+                        : 'var(--bottom-player-color)',
             }
         },
         accumulatorClass() {
@@ -172,6 +181,9 @@ export default {
             const result = engine.makeMove(nextAction, this.board)
             const animation = [...result.movesRecord!]
             for (let move of animation) {
+                if (!this.gameIsRunning) {
+                    return
+                }
                 this.board[move.pitId] = move.seeds
                 await this.sleep(this.animationSpeed)
                 --this.accumulator
@@ -185,11 +197,11 @@ export default {
                 new BoardPrinter().print(this.board)
                 this.$emit('gameOver', {
                     winningPlayer: actionResult.winningPlayer,
-                    movesHistory: engine.getMovesHistory()
+                    movesHistory: engine.getMovesHistory(),
                 })
             } else {
                 this.playingPlayer = this.getBrainFromSide(actionResult.nextTurnPlayer!)
-                this.$emit('playingPlayer', this.playingPlayer)
+                this.$emit('playingPlayerChanged', this.playingPlayer)
                 if (this.playingPlayer.brain.type !== PlayerType.HUMAN) {
                     this.aiThinkAboutNextMove()
                 }

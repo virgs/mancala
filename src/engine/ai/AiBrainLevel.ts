@@ -5,6 +5,4 @@ export enum AiBrainLevel {
     HARDCORE,
 }
 
-export const getAiBrainLevels = Object
-    .keys(AiBrainLevel)
-    .filter((item) => isNaN(Number(item)));
+export const getAiBrainLevels = Object.keys(AiBrainLevel).filter((item) => isNaN(Number(item)))

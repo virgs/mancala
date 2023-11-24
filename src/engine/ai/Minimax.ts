@@ -13,7 +13,7 @@ export class Minimax {
     private movesAnalysed: number
 
     public constructor(aiBainLevel: AiBrainLevel, playerSide: PlayerSide, board: BoardConfig) {
-        this.aiBainLevel = aiBainLevel;
+        this.aiBainLevel = aiBainLevel
         this.movesAnalysed = 0
         this.playerMovesAnalyser = new PlayerMovesAnalyser(playerSide)
         this.engine = new MancalaEngine(board)
@@ -60,7 +60,13 @@ export class Minimax {
     }
 
     //https://www.hackerearth.com/blog/developers/minimax-algorithm-alpha-beta-pruning/
-    private evaluate(boardConfig: BoardConfig, depth: number, alphaMax: number, betaMin: number, playingPlayerSide?: PlayerSide): number {
+    private evaluate(
+        boardConfig: BoardConfig,
+        depth: number,
+        alphaMax: number,
+        betaMin: number,
+        playingPlayerSide?: PlayerSide
+    ): number {
         ++this.movesAnalysed
         const gameOver =
             this.playerMovesAnalyser.getAvailableMovesForPlayer(boardConfig).length === 0 ||
@@ -74,9 +80,9 @@ export class Minimax {
         }
 
         if (playingPlayerSide === this.playerSide) {
-            return this.maximize(boardConfig, depth, alphaMax, betaMin);
+            return this.maximize(boardConfig, depth, alphaMax, betaMin)
         } else {
-            return this.minimize(boardConfig, depth, alphaMax, betaMin);
+            return this.minimize(boardConfig, depth, alphaMax, betaMin)
         }
     }
 
@@ -92,14 +98,17 @@ export class Minimax {
                 break
             }
         }
-        return maxScore;
+        return maxScore
     }
 
     private minimize(boardConfig: BoardConfig, depth: number, alphaMax: number, betaMin: number): number {
         let minScore = Infinity
         const availableMoves = this.playerMovesAnalyser.getAvailableMovesForOpponentPlayer(boardConfig)
         for (let moveIndex of availableMoves) {
-            const moveMade = this.engine.makeMove({ playerSide: getOppositePlayerSide(this.playerSide), pitId: moveIndex }, boardConfig)
+            const moveMade = this.engine.makeMove(
+                { playerSide: getOppositePlayerSide(this.playerSide), pitId: moveIndex },
+                boardConfig
+            )
             const result = this.evaluate(moveMade.boardConfig, depth + 1, alphaMax, betaMin, moveMade.nextTurnPlayer)
             minScore = Math.min(minScore, result)
             betaMin = Math.min(betaMin, result)
@@ -107,7 +116,6 @@ export class Minimax {
                 break
             }
         }
-        return minScore;
+        return minScore
     }
-
 }

@@ -9,6 +9,12 @@ export interface MoveRequest {
     pitId: number
 }
 
+export interface MoveHistory {
+    playerSide: PlayerSide
+    pitId: number
+    capturedSeeds?: number
+}
+
 export interface MoveResult {
     boardConfig: BoardConfig
     gameOver: boolean
@@ -37,7 +43,7 @@ type EngineSettings = {
 export class MancalaEngine {
     private readonly staticBoardAnalyser: StaticBoardAnalyser
     private readonly engineSettings: Partial<EngineSettings>
-    private readonly movesHistory: MoveRequest[]
+    private readonly movesHistory: MoveHistory[]
 
     public constructor(board: BoardConfig, settings?: Partial<EngineSettings>) {
         this.staticBoardAnalyser = new StaticBoardAnalyser(board)
@@ -63,9 +69,9 @@ export class MancalaEngine {
                 gameOver: true,
                 movesRecord: this.engineSettings.recordMoves
                     ? redistribution
-                        .getMovesRecord()
-                        .concat(capture.getMovesRecord())
-                        .concat(gameOverResult.gameOverMovesRecord)
+                          .getMovesRecord()
+                          .concat(capture.getMovesRecord())
+                          .concat(gameOverResult.gameOverMovesRecord)
                     : undefined,
             }
         } else {
@@ -88,10 +94,10 @@ export class MancalaEngine {
         let remainingStones = boardMoveMaker.setPitSeeds(currentPitId, 0)
 
         while (remainingStones > 0) {
-            currentPitId = this.staticBoardAnalyser.getNextPocketId(currentPitId)
+            currentPitId = this.staticBoardAnalyser.getNextPitId(currentPitId)
             if (
-                this.staticBoardAnalyser.isPocketStore(currentPitId) &&
-                !this.staticBoardAnalyser.checkPocketOwnership(move.playerSide, currentPitId)
+                this.staticBoardAnalyser.isPitStore(currentPitId) &&
+                !this.staticBoardAnalyser.checkPitOwnership(move.playerSide, currentPitId)
             ) {
                 continue
             }
@@ -105,25 +111,31 @@ export class MancalaEngine {
         return this.movesHistory
     }
 
-    private checkNextPlayerTurn(playingPlayer: PlayerSide, currentPocketId: number): PlayerSide {
-        if (this.staticBoardAnalyser.checkPocketOwnership(playingPlayer, currentPocketId)) {
-            if (this.staticBoardAnalyser.isPocketStore(currentPocketId)) {
+    private checkNextPlayerTurn(playingPlayer: PlayerSide, currentPitId: number): PlayerSide {
+        if (this.staticBoardAnalyser.checkPitOwnership(playingPlayer, currentPitId)) {
+            if (this.staticBoardAnalyser.isPitStore(currentPitId)) {
                 return playingPlayer
             }
         }
         return getOppositePlayerSide(playingPlayer)
     }
 
-    private checkCapture(playingPlayer: PlayerSide, currentPocketId: number, board: number[]): BoardMoveMaker {
+    private checkCapture(playingPlayer: PlayerSide, currentPitId: number, board: number[]): BoardMoveMaker {
         const boardMoveMaker = new BoardMoveMaker(board)
-        if (this.staticBoardAnalyser.checkPocketOwnership(playingPlayer, currentPocketId)) {
-            if (boardMoveMaker.getPitSeeds(currentPocketId) === 1) {
-                if (!this.staticBoardAnalyser.isPocketStore(currentPocketId)) {
-                    const oppositeSitePocketId = this.staticBoardAnalyser.getOppositeSidePitId(currentPocketId)
-                    if (boardMoveMaker.getPitSeeds(oppositeSitePocketId) > 0) {
-                        const storePocketIndex = this.staticBoardAnalyser.getSideStorePitId(playingPlayer)
-                        boardMoveMaker.transferSeeds(oppositeSitePocketId, storePocketIndex)
-                        boardMoveMaker.transferSeeds(currentPocketId, storePocketIndex)
+        if (this.staticBoardAnalyser.checkPitOwnership(playingPlayer, currentPitId)) {
+            if (boardMoveMaker.getPitSeeds(currentPitId) === 1) {
+                if (!this.staticBoardAnalyser.isPitStore(currentPitId)) {
+                    const oppositeSitePitId = this.staticBoardAnalyser.getOppositeSidePitId(currentPitId)
+                    const oppositePitSeeds = boardMoveMaker.getPitSeeds(oppositeSitePitId)
+                    if (oppositePitSeeds > 0) {
+                        this.movesHistory.push({
+                            playerSide: playingPlayer,
+                            capturedSeeds: oppositePitSeeds,
+                            pitId: oppositeSitePitId,
+                        })
+                        const storePitIndex = this.staticBoardAnalyser.getSideStorePitId(playingPlayer)
+                        boardMoveMaker.transferSeeds(oppositeSitePitId, storePitIndex)
+                        boardMoveMaker.transferSeeds(currentPitId, storePitIndex)
                     }
                 }
             }
@@ -132,10 +144,10 @@ export class MancalaEngine {
     }
 
     private validateMove(move: MoveRequest, board: number[]) {
-        if (!this.staticBoardAnalyser.checkPocketOwnership(move.playerSide, move.pitId)) {
+        if (!this.staticBoardAnalyser.checkPitOwnership(move.playerSide, move.pitId)) {
             throw new Error(`Player '${move.playerSide}' cannot select an opponent's pit (${move.pitId})`)
         }
-        if (this.staticBoardAnalyser.isPocketStore(move.pitId)) {
+        if (this.staticBoardAnalyser.isPitStore(move.pitId)) {
             throw new Error(`Player '${move.playerSide}' cannot select a store (${move.pitId})`)
         }
         if (board[move.pitId] === 0) {
@@ -175,10 +187,7 @@ export class MancalaEngine {
         if (this.engineSettings.gameOverCaptureVariation) {
             const playingPlayerStore = this.staticBoardAnalyser.getSideStorePitId(playingPlayer)
             board.forEach((pitId) => {
-                if (
-                    this.staticBoardAnalyser.checkPocketOwnership(playingPlayer, pitId) &&
-                    pitId !== playingPlayerStore
-                ) {
+                if (this.staticBoardAnalyser.checkPitOwnership(playingPlayer, pitId) && pitId !== playingPlayerStore) {
                     boardMoveMaker.transferSeeds(pitId, playingPlayerStore)
                 }
             })
@@ -187,7 +196,7 @@ export class MancalaEngine {
             const opponentPlayerStore = this.staticBoardAnalyser.getSideStorePitId(opponentPlayer)
             board.forEach((pitId) => {
                 if (
-                    this.staticBoardAnalyser.checkPocketOwnership(opponentPlayer, pitId) &&
+                    this.staticBoardAnalyser.checkPitOwnership(opponentPlayer, pitId) &&
                     pitId !== opponentPlayerStore
                 ) {
                     boardMoveMaker.transferSeeds(pitId, opponentPlayerStore)

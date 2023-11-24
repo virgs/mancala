@@ -10,21 +10,17 @@ export class BoardPrinter {
     }
 
     public print(board: BoardConfig): void {
-        const topPlayerPits = board
-            .filter((_, index) => index < board.length / 2)
-        const topPlayerInternalPits = topPlayerPits
-            .filter((_, index) => index < topPlayerPits.length - 1)
-        const bottomPlayerPits = board
-            .filter((_, index) => index >= board.length / 2)
-        const bottomPlayerInternalPits = bottomPlayerPits
-            .filter((_, index) => index < bottomPlayerPits.length - 1)
+        const topPlayerPits = board.filter((_, index) => index < board.length / 2)
+        const topPlayerInternalPits = topPlayerPits.filter((_, index) => index < topPlayerPits.length - 1)
+        const bottomPlayerPits = board.filter((_, index) => index >= board.length / 2)
+        const bottomPlayerInternalPits = bottomPlayerPits.filter((_, index) => index < bottomPlayerPits.length - 1)
 
         console.log(
             this.emptySpaceGap +
-            topPlayerInternalPits
-                .reverse()
-                .map((stones, index) => this.printPit(stones, board.length - index - 2))
-                .join(this.emptySpaceGap)
+                topPlayerInternalPits
+                    .reverse()
+                    .map((stones, index) => this.printPit(stones, board.length - index - 2))
+                    .join(this.emptySpaceGap)
         )
 
         console.log(
@@ -39,9 +35,7 @@ export class BoardPrinter {
 
         console.log(
             this.emptySpaceGap +
-            bottomPlayerInternalPits
-                .map((seeds, index) => this.printPit(seeds, index))
-                .join(this.emptySpaceGap)
+                bottomPlayerInternalPits.map((seeds, index) => this.printPit(seeds, index)).join(this.emptySpaceGap)
         )
     }
 

@@ -22,11 +22,11 @@ export class StaticBoardAnalyser {
         return this.boardLength - 2 - pitId
     }
 
-    public isPocketStore(pitId: number): boolean {
+    public isPitStore(pitId: number): boolean {
         return pitId === this.boardLength / 2 - 1 || pitId === this.boardLength - 1
     }
 
-    public checkPocketOwnership(playerSide: PlayerSide, pitId: number): boolean {
+    public checkPitOwnership(playerSide: PlayerSide, pitId: number): boolean {
         if (playerSide === PlayerSide.TOP && pitId < this.boardLength / 2) {
             return true
         }
@@ -36,7 +36,7 @@ export class StaticBoardAnalyser {
         return false
     }
 
-    public getNextPocketId(currentPocketId: number): number {
+    public getNextPitId(currentPocketId: number): number {
         return (currentPocketId + 1) % this.boardLength
     }
 }

@@ -16,10 +16,10 @@ const props = defineProps<{
     index: number
     store: boolean
     side: PlayerSide
-    ownerPlayerType?: PlayerType
     seeds: number
+    ownerPlayerType?: PlayerType
     lastSelectedPitId?: number
-    playingPlayerSide: PlayerSide | undefined
+    playingPlayerSide?: PlayerSide
 }>()
 
 const generateBorderRadius = () => Math.random() * 25 + 25 + '%'
