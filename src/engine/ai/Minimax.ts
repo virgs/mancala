@@ -20,17 +20,14 @@ export class Minimax {
         this.playerSide = playerSide
         this.maxDepth = 0
         switch (aiBainLevel) {
-            case AiBrainLevel.BEGINNER:
+            case AiBrainLevel.EASY:
                 this.maxDepth = 0
                 break
             case AiBrainLevel.MEDIUM:
-                this.maxDepth = 1
+                this.maxDepth = 2
                 break
             case AiBrainLevel.HARD:
-                this.maxDepth = 3
-                break
-            case AiBrainLevel.HARDCORE:
-                this.maxDepth = 9
+                this.maxDepth = 8
                 break
         }
     }

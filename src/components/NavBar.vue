@@ -1,38 +1,35 @@
 <template>
-    <nav class="navbar border-bottom border-body" style="background-color: var(--nav-bar-color)">
-        <div class="container">
-            <div>
-                <BrainSelector :side="PlayerSide.TOP" :gameIsRunning="gameIsRunning" @brainSelected="brainSelected">
-                </BrainSelector>
-                <BrainSelector :side="PlayerSide.BOTTOM" :gameIsRunning="gameIsRunning" @brainSelected="brainSelected">
-                </BrainSelector>
-            </div>
-
-            <div style="color: var(--vt-c-black-mute);">
-                <input type="range" class="form-range range-cust" :min="animationInterval.min" :step="200"
-                    :max="animationInterval.max" v-model="animationSpeed" id="customRange2" />
-                <font-awesome-icon icon="fa-solid fa-bolt" style="margin: 0 10px" />
-            </div>
-            <button class="btn text" @click="startStopGame">
-                <div v-if="gameIsRunning" class="btn-success">
-                    <span>
-                        Stop
-                    </span>
-                    <font-awesome-icon icon="fa-regular fa-circle-stop" />
+    <nav class="navbar w-100 border-bottom border-body" style="background-color: var(--nav-bar-color); max-height: 15vh;">
+        <div class="container-fluid m-0 p-0">
+            <div class="row w-100 g-1 justify-content-between">
+                <div class="col-6 col-lg-4">
+                    <BrainSelector :side="PlayerSide.TOP" :gameIsRunning="gameIsRunning" @brainSelected="brainSelected">
+                    </BrainSelector>
+                    <img src="@/assets/VS.svg" class="img-fluid" alt="versus" style="width: 2.5em !important" />
+                    <BrainSelector :side="PlayerSide.BOTTOM" :gameIsRunning="gameIsRunning" @brainSelected="brainSelected">
+                    </BrainSelector>
                 </div>
-                <div v-else class="btn-danger">
-                    <span>
-                        Start
-                    </span>
-                    <font-awesome-icon icon="fa-solid fa-play" style="margin: 0 10px" />
+                <div class="col-3 col-lg-4">
+                    <div class="d-flex" style="color: var(--vt-c-black-mute);">
+                        <input type="range" class="form-range range-cust" :min="animationInterval.min" :step="200"
+                            :max="animationInterval.max" v-model="animationDelay" style="margin: 5px;" />
+                        <font-awesome-icon icon="fa-solid fa-bolt" style="margin: 10px" />
+                    </div>
                 </div>
-            </button>
-            <div class="text" style="color: var(--vt-c-black-mute); text-align: left; width: 10%;">
-                <font-awesome-icon icon="fa-solid fa-hourglass" :class="[gameIsRunning && 'hourglass-rotation']"
-                    style="margin: 0 10px" />
-                <span>
-                    {{ timerLabel }}
-                </span>
+                <div class="col-3 col-lg-4 d-flex justify-content-end">
+                    <button v-if="gameIsRunning" @click="stopGame" class="btn btn-sm btn-danger">
+                        <span class="text">
+                            Stop
+                        </span>
+                        <font-awesome-icon icon="fa-solid fa-stop" style="margin: 0 10px" />
+                    </button>
+                    <button v-else @click="startGame" class="btn btn-sm btn-success">
+                        <span class="text">
+                            Start
+                        </span>
+                        <font-awesome-icon icon="fa-solid fa-play" style="margin: 0 10px" />
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
@@ -49,7 +46,7 @@ export default {
     components: {
         BrainSelector,
     },
-    props: ['gameIsRunning'],
+    props: ['gameIsRunning', 'animationSpeed'],
     setup() {
         return {
             PlayerSide,
@@ -57,18 +54,19 @@ export default {
     },
     emits: ['startGame', 'abortGame', 'animationSpeedChanged'],
     data() {
+        const animationInterval = {
+            max: 2100,
+            min: 100
+        }
         return {
-            animationInterval: {
-                max: 2100,
-                min: 100
-            },
+            animationInterval: animationInterval,
             timerInterval: undefined as number | undefined,
             timer: 0,
             players: {
                 [PlayerSide.TOP]: new Player(PlayerSide.TOP, new HumanBrain()),
                 [PlayerSide.BOTTOM]: new Player(PlayerSide.BOTTOM, new HumanBrain()),
             },
-            animationSpeed: 500,
+            animationDelay: this.animationSpeed,
         }
     },
     computed: {
@@ -85,27 +83,25 @@ export default {
                 this.timerInterval = 0
             }
         },
-        animationSpeed() {
-            const animationDelay = this.animationInterval.max + this.animationInterval.min - this.animationSpeed
-            console.log(animationDelay)
+        animationDelay() {
+            const animationDelay = this.animationInterval.max + this.animationInterval.min - this.animationDelay
             this.$emit('animationSpeedChanged', animationDelay)
         },
     },
     methods: {
-        startStopGame() {
-            if (this.gameIsRunning) {
-                clearInterval(this.timerInterval)
-                this.timerInterval = 0
-                this.$emit('abortGame')
-            } else {
-                this.timer = 0
-                this.timerInterval = setInterval(() => (this.timer += 1), 1000)
-                this.$emit('startGame', {
-                    topPlayer: this.players[PlayerSide.TOP],
-                    bottomPlayer: this.players[PlayerSide.BOTTOM],
-                    animationSpeed: this.animationSpeed,
-                })
-            }
+        startGame() {
+            this.timer = 0
+            this.timerInterval = setInterval(() => (this.timer += 1), 1000)
+            this.$emit('startGame', {
+                topPlayer: this.players[PlayerSide.TOP],
+                bottomPlayer: this.players[PlayerSide.BOTTOM],
+                animationSpeed: this.animationSpeed,
+            })
+        },
+        stopGame() {
+            clearInterval(this.timerInterval)
+            this.timerInterval = 0
+            this.$emit('abortGame')
         },
         brainSelected(selection: { side: PlayerSide; brain: Brain }) {
             this.players[selection.side] = new Player(selection.side, selection.brain)
@@ -114,8 +110,14 @@ export default {
 }
 </script>
 <style scoped>
+.fa-hourglass {
+    transform: rotate(-90deg);
+    transition: all 500ms ease;
+
+}
+
 .hourglass-rotation {
-    animation: rotation 1000ms infinite;
+    transform: rotate(0deg);
 }
 
 @keyframes rotation {

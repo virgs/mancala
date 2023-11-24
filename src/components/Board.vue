@@ -57,7 +57,7 @@ import { StaticBoardAnalyser } from '@/engine/StaticBoardAnalyser'
 let engine: MancalaEngine
 
 export default {
-    name: 'Mancala',
+    name: 'Board',
     props: ['internalPockets', 'initialStones', 'topPlayer', 'bottomPlayer', 'animationSpeed', 'gameIsRunning'],
     components: {
         Pit,

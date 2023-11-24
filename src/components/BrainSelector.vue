@@ -1,22 +1,22 @@
 <template>
     <span class="dropdown">
-        <button :disabled="gameIsRunning" class="btn dropdown-toggle text" type="button" data-bs-toggle="dropdown"
+        <button :disabled="gameIsRunning" class="btn btn-sm dropdown-toggle text" type="button" data-bs-toggle="dropdown"
             aria-expanded="false" :style="labelText">
             <font-awesome-icon :icon="'fa-solid ' + currentBrainIcon" style="margin: 0 10px; border: none;" />
             <span>{{ currentBrainLabel }}</span>
         </button>
-        <ul class="dropdown-menu">
+        <ul class="dropdown-menu p-0">
             <li>
-                <button @click="brainSelected()" class="dropdown-item text" :style="labelText">
+                <button @click="brainSelected()" class="dropdown-item btn-sm text px-2" :style="labelText">
                     <font-awesome-icon icon="fa-solid fa-brain" style="margin: 0 10px" />
                     <span>Human</span>
                 </button>
             </li>
             <li>
-                <hr class="dropdown-divider" />
+                <hr class="dropdown-divider my-1" />
             </li>
             <li v-for="(aiBrain, index) in availableAiBrainsLabel">
-                <button @click="brainSelected(index)" class="dropdown-item text" :style="labelText">
+                <button @click="brainSelected(index)" class="dropdown-item btn-sm text px-2" :style="labelText">
                     <font-awesome-icon icon="fa-solid fa-robot" style="margin: 0 10px" />
                     <span>{{ aiBrain }}</span>
                 </button>

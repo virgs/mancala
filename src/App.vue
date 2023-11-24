@@ -1,20 +1,9 @@
 <template>
     <main>
-        <NavBar
-            :gameIsRunning="gameIsRunning"
-            @startGame="startGame"
-            @abortGame="abortGame"
-            @animationSpeedChanged="animationSpeedChanged"
-        ></NavBar>
-        <Board
-            :gameIsRunning="gameIsRunning"
-            :internalPockets="internalPockets"
-            :initialStones="initialStones"
-            :topPlayer="topPlayer"
-            :bottomPlayer="bottomPlayer"
-            :animationSpeed="animationSpeed"
-            @gameOver="gameOver"
-        />
+        <NavBar :gameIsRunning="gameIsRunning" @startGame="startGame" @abortGame="abortGame"
+            :animationSpeed="animationSpeed" @animationSpeedChanged="animationSpeedChanged"></NavBar>
+        <Board :gameIsRunning="gameIsRunning" :internalPockets="internalPockets" :initialStones="initialStones"
+            :topPlayer="topPlayer" :bottomPlayer="bottomPlayer" :animationSpeed="animationSpeed" @gameOver="gameOver" />
     </main>
 </template>
 
