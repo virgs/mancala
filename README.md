@@ -1,6 +1,6 @@
 # Mancala
 
-Gme Oriented Artificial Intelligence project.
+Game Oriented Artificial Intelligence project.
 This project was created for fun and studying AI purposes
 
 It uses Minimax as artificial intelligence.
