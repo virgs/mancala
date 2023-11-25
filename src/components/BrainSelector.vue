@@ -1,8 +1,14 @@
 <template>
     <span class="dropdown">
-        <button :disabled="gameIsRunning" class="btn btn-sm dropdown-toggle text" type="button" data-bs-toggle="dropdown"
-            aria-expanded="false" :style="labelText">
-            <font-awesome-icon :icon="'fa-solid ' + currentBrainIcon" style="margin: 0 10px; border: none;" />
+        <button
+            :disabled="gameIsRunning"
+            class="btn btn-sm dropdown-toggle text"
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            :style="labelText"
+        >
+            <font-awesome-icon :icon="'fa-solid ' + currentBrainIcon" style="margin: 0 10px; border: none" />
             <span>{{ currentBrainLabel }}</span>
         </button>
         <ul class="dropdown-menu p-0">
@@ -65,15 +71,15 @@ export default {
                 color: 'var(--top-player-color)',
                 direction: 'ltr',
                 textAlign: 'left',
-                border: 'none'
+                border: 'none',
             }
             if (this.side === PlayerSide.BOTTOM) {
                 style.color = 'var(--bottom-player-color)'
                 style.direction = 'rtl'
                 style.textAlign = 'right'
             }
-            return style;
-        }
+            return style
+        },
     },
     methods: {
         aiBrainLabel(text: string): string {

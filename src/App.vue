@@ -1,9 +1,21 @@
 <template>
     <main>
-        <NavBar :gameIsRunning="gameIsRunning" @startGame="startGame" @abortGame="abortGame"
-            :animationSpeed="animationSpeed" @animationSpeedChanged="animationSpeedChanged"></NavBar>
-        <Board :gameIsRunning="gameIsRunning" :internalPockets="internalPockets" :initialStones="initialStones"
-            :topPlayer="topPlayer" :bottomPlayer="bottomPlayer" :animationSpeed="animationSpeed" @gameOver="gameOver" />
+        <NavBar
+            :gameIsRunning="gameIsRunning"
+            @startGame="startGame"
+            @abortGame="abortGame"
+            :animationSpeed="animationSpeed"
+            @animationSpeedChanged="animationSpeedChanged"
+        ></NavBar>
+        <Board
+            :gameIsRunning="gameIsRunning"
+            :internalPockets="internalPockets"
+            :initialStones="initialStones"
+            :topPlayer="topPlayer"
+            :bottomPlayer="bottomPlayer"
+            :animationSpeed="animationSpeed"
+            @gameOver="gameOver"
+        />
         <GameOver :result="gameOverResult" @modalIsGone="gameOverModalIsGone"></GameOver>
     </main>
 </template>
@@ -20,7 +32,7 @@ export default {
     components: {
         NavBar,
         Board,
-        GameOver
+        GameOver,
     },
     data() {
         return {
@@ -35,7 +47,7 @@ export default {
     },
     methods: {
         gameOver(result: EndGameResult) {
-            this.gameOverResult = result;
+            this.gameOverResult = result
         },
         gameOverModalIsGone() {
             this.gameIsRunning = false

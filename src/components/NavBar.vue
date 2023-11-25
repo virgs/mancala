@@ -1,32 +1,42 @@
 <template>
-    <nav class="navbar w-100 border-bottom border-body" style="background-color: var(--nav-bar-color); max-height: 15vh;">
+    <nav
+        class="navbar w-100 border-bottom border-body"
+        style="background-color: var(--nav-bar-color); max-height: 15vh"
+    >
         <div class="container-fluid">
             <div class="row w-100 g-1 justify-content-between">
-                <div class="col-12 col-sm-6 col-lg-4" style="text-align: center; white-space:nowrap;">
+                <div class="col-12 col-sm-6 col-lg-4" style="text-align: center; white-space: nowrap">
                     <BrainSelector :side="PlayerSide.TOP" :gameIsRunning="gameIsRunning" @brainSelected="brainSelected">
                     </BrainSelector>
                     <img src="@/assets/VS.svg" class="img-fluid" alt="versus" style="width: 2.5em !important" />
-                    <BrainSelector :side="PlayerSide.BOTTOM" :gameIsRunning="gameIsRunning" @brainSelected="brainSelected">
+                    <BrainSelector
+                        :side="PlayerSide.BOTTOM"
+                        :gameIsRunning="gameIsRunning"
+                        @brainSelected="brainSelected"
+                    >
                     </BrainSelector>
                 </div>
                 <div class="col-6 col-sm-3 col-lg-4">
-                    <div class="d-flex" style="color: var(--vt-c-black-mute);">
-                        <input type="range" class="form-range range-cust" :min="animationInterval.min" :step="200"
-                            :max="animationInterval.max" v-model="animationDelay" style="margin: 5px;" />
+                    <div class="d-flex" style="color: var(--vt-c-black-mute)">
+                        <input
+                            type="range"
+                            class="form-range range-cust"
+                            :min="animationInterval.min"
+                            :step="200"
+                            :max="animationInterval.max"
+                            v-model="animationDelay"
+                            style="margin: 5px"
+                        />
                         <font-awesome-icon icon="fa-solid fa-bolt" style="margin: 10px" />
                     </div>
                 </div>
                 <div class="col-6 col-sm-3 col-lg-4 d-flex justify-content-end">
                     <button v-if="gameIsRunning" @click="stopGame" class="btn btn-sm btn-danger">
-                        <span class="text">
-                            Stop
-                        </span>
+                        <span class="text"> Stop </span>
                         <font-awesome-icon icon="fa-solid fa-stop" style="margin: 0 10px" />
                     </button>
                     <button v-else @click="startGame" class="btn btn-sm btn-success">
-                        <span class="text">
-                            Start
-                        </span>
+                        <span class="text"> Start </span>
                         <font-awesome-icon icon="fa-solid fa-play" style="margin: 0 10px" />
                     </button>
                 </div>
@@ -56,7 +66,7 @@ export default {
     data() {
         const animationInterval = {
             max: 2100,
-            min: 100
+            min: 100,
         }
         return {
             animationInterval: animationInterval,
@@ -113,7 +123,6 @@ export default {
 .fa-hourglass {
     transform: rotate(-90deg);
     transition: all 500ms ease;
-
 }
 
 .hourglass-rotation {

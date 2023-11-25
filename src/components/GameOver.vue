@@ -2,16 +2,16 @@
     <div class="modal" tabindex="-1" id="myModal">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
-                <div class="modal-header pb-1" style="border-width: 5px;border-color: var(--vt-c-black);">
-                    <h1 class="fs-1 modal-title text" style="text-align: center;">Game Stats</h1>
+                <div class="modal-header pb-1" style="border-width: 5px; border-color: var(--vt-c-black)">
+                    <h1 class="fs-1 modal-title text" style="text-align: center">Game Stats</h1>
                 </div>
                 <div class="modal-body">
                     <table class="table">
                         <tbody>
-                            <tr v-for="row in rows" class="text fs-2" style="text-align: center;">
+                            <tr v-for="row in rows" class="text fs-2" style="text-align: center">
                                 <td :style="rowStyle(PlayerSide.TOP)">{{ row.topPlayer }}</td>
                                 <th scope="row">{{ row.title }}</th>
-                                <td :style="rowStyle(PlayerSide.BOTTOM)"> {{ row.bottomPlayer }}</td>
+                                <td :style="rowStyle(PlayerSide.BOTTOM)">{{ row.bottomPlayer }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -35,7 +35,7 @@ const initStats = () => {
     const stats: Stats = {
         moves: 0,
         capture: 0,
-        capturedSeeds: 0
+        capturedSeeds: 0,
     }
     return {
         [PlayerSide.TOP]: { ...stats },
@@ -44,9 +44,9 @@ const initStats = () => {
 }
 
 type TableRow = {
-    title: string,
-    topPlayer: string,
-    bottomPlayer: string,
+    title: string
+    topPlayer: string
+    bottomPlayer: string
 }
 
 export default {
@@ -55,17 +55,17 @@ export default {
     emits: ['modalIsGone'],
     setup() {
         return {
-            PlayerSide
+            PlayerSide,
         }
     },
     data() {
         return {
-            rows: [] as TableRow[]
+            rows: [] as TableRow[],
         }
     },
     mounted() {
         const myModalEl = document.getElementById('myModal')
-        myModalEl?.addEventListener('hidden.bs.modal', event => {
+        myModalEl?.addEventListener('hidden.bs.modal', (event) => {
             console.log('timeout')
             this.$emit('modalIsGone')
             this.rows = []
@@ -73,21 +73,19 @@ export default {
     },
     watch: {
         result() {
-            this.rows = this.createRows();
+            this.rows = this.createRows()
             //@ts-expect-error
-            const modal = new bootstrap.Modal('#myModal', {});
-            modal.show();
+            const modal = new bootstrap.Modal('#myModal', {})
+            modal.show()
         },
     },
     computed: {
         rowStyle() {
             return (side: PlayerSide) => ({
-                color: side === PlayerSide.TOP
-                    ? 'var(--top-player-color)'
-                    : 'var(--bottom-player-color)',
-                'text-shadow': '1px 1px black'
+                color: side === PlayerSide.TOP ? 'var(--top-player-color)' : 'var(--bottom-player-color)',
+                'text-shadow': '1px 1px black',
             })
-        }
+        },
     },
     methods: {
         createRows(): TableRow[] {
@@ -95,14 +93,13 @@ export default {
             const endGameResult = this.result as EndGameResult
             const analyser = new PlayerMovesAnalyser(PlayerSide.TOP)
             const rows: TableRow[] = []
-            endGameResult.movesHistory
-                .forEach(move => {
-                    ++stats[move.playerSide].moves
-                    if (move.capturedSeeds) {
-                        ++stats[move.playerSide].capture
-                        stats[move.playerSide].capturedSeeds += move.capturedSeeds
-                    }
-                })
+            endGameResult.movesHistory.forEach((move) => {
+                ++stats[move.playerSide].moves
+                if (move.capturedSeeds) {
+                    ++stats[move.playerSide].capture
+                    stats[move.playerSide].capturedSeeds += move.capturedSeeds
+                }
+            })
 
             const format = (text: number, pad: number = 2): string => {
                 return text.toString().padStart(pad)
@@ -111,7 +108,7 @@ export default {
             rows.push({
                 title: 'Score',
                 topPlayer: format(analyser.checkPlayerScore(endGameResult.board)),
-                bottomPlayer: format(analyser.checkOppositePlayerScore(endGameResult.board))
+                bottomPlayer: format(analyser.checkOppositePlayerScore(endGameResult.board)),
             })
             rows.push({
                 title: 'Moves',
@@ -120,18 +117,21 @@ export default {
             })
             rows.push({
                 title: 'Captures (seeds)',
-                topPlayer: format(stats[PlayerSide.TOP].capture) + ` (${format(stats[PlayerSide.TOP].capturedSeeds, 1)})`,
-                bottomPlayer: format(stats[PlayerSide.BOTTOM].capture) + ` (${format(stats[PlayerSide.BOTTOM].capturedSeeds, 1)})`,
+                topPlayer:
+                    format(stats[PlayerSide.TOP].capture) + ` (${format(stats[PlayerSide.TOP].capturedSeeds, 1)})`,
+                bottomPlayer:
+                    format(stats[PlayerSide.BOTTOM].capture) +
+                    ` (${format(stats[PlayerSide.BOTTOM].capturedSeeds, 1)})`,
             })
             return rows
-        }
-    }
+        },
+    },
 }
 </script>
 <style scoped>
 .modal {
     background-color: var(--vt-c-white-mute);
-    opacity: .7;
+    opacity: 0.7;
 }
 
 .modal-content {

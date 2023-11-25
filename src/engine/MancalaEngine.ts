@@ -5,10 +5,10 @@ import { StaticBoardAnalyser } from './StaticBoardAnalyser'
 import { PlayerSide, getOppositePlayerSide } from './player/PlayerSide'
 
 export type EndGameResult = {
-    winningPlayer: PlayerSide;
-    movesHistory: MoveHistory[],
+    winningPlayer: PlayerSide
+    movesHistory: MoveHistory[]
     board: BoardConfig
-};
+}
 
 export interface MoveRequest {
     playerSide: PlayerSide
@@ -75,9 +75,9 @@ export class MancalaEngine {
                 gameOver: true,
                 movesRecord: this.engineSettings.recordMoves
                     ? redistribution
-                        .getMovesRecord()
-                        .concat(capture.getMovesRecord())
-                        .concat(gameOverResult.gameOverMovesRecord)
+                          .getMovesRecord()
+                          .concat(capture.getMovesRecord())
+                          .concat(gameOverResult.gameOverMovesRecord)
                     : undefined,
             }
         } else {
