@@ -104,24 +104,24 @@ export default {
                     }
                 })
 
-            const format = (text: number, pad: number): string => {
+            const format = (text: number, pad: number = 2): string => {
                 return text.toString().padStart(pad)
             }
 
             rows.push({
                 title: 'Score',
-                topPlayer: format(analyser.checkPlayerScore(endGameResult.board), 2),
-                bottomPlayer: format(analyser.checkOppositePlayerScore(endGameResult.board), 2)
+                topPlayer: format(analyser.checkPlayerScore(endGameResult.board)),
+                bottomPlayer: format(analyser.checkOppositePlayerScore(endGameResult.board))
             })
             rows.push({
                 title: 'Moves',
-                topPlayer: format(stats[PlayerSide.TOP].moves, 2),
-                bottomPlayer: format(stats[PlayerSide.BOTTOM].moves, 2),
+                topPlayer: format(stats[PlayerSide.TOP].moves),
+                bottomPlayer: format(stats[PlayerSide.BOTTOM].moves),
             })
             rows.push({
                 title: 'Captures (seeds)',
-                topPlayer: format(stats[PlayerSide.TOP].capture, 2) + ` (${format(stats[PlayerSide.TOP].capturedSeeds, 2)})`,
-                bottomPlayer: format(stats[PlayerSide.BOTTOM].capture, 2) + ` (${format(stats[PlayerSide.BOTTOM].capturedSeeds, 2)})`,
+                topPlayer: format(stats[PlayerSide.TOP].capture) + ` (${format(stats[PlayerSide.TOP].capturedSeeds, 1)})`,
+                bottomPlayer: format(stats[PlayerSide.BOTTOM].capture) + ` (${format(stats[PlayerSide.BOTTOM].capturedSeeds, 1)})`,
             })
             return rows
         }
@@ -131,7 +131,7 @@ export default {
 <style scoped>
 .modal {
     background-color: var(--vt-c-white-mute);
-    opacity: .66;
+    opacity: .7;
 }
 
 .modal-content {
@@ -141,6 +141,7 @@ export default {
 }
 
 .modal-title {
+    font-weight: bold;
     text-align: center;
     text-shadow: 1px 1px red;
     border-color: var(--vt-c-black);
@@ -148,6 +149,7 @@ export default {
 
 th,
 td {
+    font-weight: bold;
     background-color: transparent;
     color: var(--hihglighted-number-color);
     text-shadow: 1px 1px red;

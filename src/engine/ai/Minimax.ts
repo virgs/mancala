@@ -27,7 +27,7 @@ export class Minimax {
                 this.maxDepth = 2
                 break
             case AiBrainLevel.HARD:
-                this.maxDepth = 8
+                this.maxDepth = 9
                 break
         }
     }
