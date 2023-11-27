@@ -10,57 +10,34 @@
         <div class="container-fluid px-5 plank-board">
             <div class="row g-2 h-100">
                 <div class="col">
-                    <Pit
-                        :seeds="board[topSideStorePit]"
-                        :index="topSideStorePit"
-                        :playingPlayerSide="playingPlayer?.side"
-                        :store="true"
-                        :ownerPlayerType="topPlayer?.brain.type"
-                        @nextActionSelected="nextActionSelected"
-                        :side="PlayerSide.TOP"
-                    >
+                    <Pit :seeds="board[topSideStorePit]" :index="topSideStorePit" :playingPlayerSide="playingPlayer?.side"
+                        :store="true" :ownerPlayerType="settings?.topPlayer?.brain.type"
+                        @nextActionSelected="nextActionSelected" :side="PlayerSide.TOP">
                     </Pit>
                 </div>
                 <div class="col-8">
                     <div class="row g-0 justify-content-center" style="height: 50%">
                         <div v-for="(pit, index) in topInternalPockets" class="col mx-auto">
-                            <Pit
-                                :seeds="pit"
-                                :index="topInternalPockets.length - 1 - index"
-                                :store="false"
-                                :lastSelectedPitId="lastSelectedPitId"
-                                :ownerPlayerType="topPlayer?.brain.type"
-                                @nextActionSelected="nextActionSelected"
-                                :playingPlayerSide="playingPlayer?.side"
-                                :side="PlayerSide.TOP"
-                            ></Pit>
+                            <Pit :seeds="pit" :index="topInternalPockets.length - 1 - index" :store="false"
+                                :lastSelectedPitId="lastSelectedPitId" :ownerPlayerType="settings?.topPlayer?.brain.type"
+                                @nextActionSelected="nextActionSelected" :playingPlayerSide="playingPlayer?.side"
+                                :side="PlayerSide.TOP"></Pit>
                         </div>
                     </div>
                     <div class="row g-0 justify-content-center" style="height: 50%">
                         <div v-for="(pit, index) in bottomInternalPockets" class="col mx-auto">
-                            <Pit
-                                :seeds="pit"
-                                :index="index + bottomInternalPockets.length + 1"
-                                :lastSelectedPitId="lastSelectedPitId"
-                                :ownerPlayerType="bottomPlayer?.brain.type"
-                                :playingPlayerSide="playingPlayer?.side"
-                                :store="false"
-                                @nextActionSelected="nextActionSelected"
-                                :side="PlayerSide.BOTTOM"
-                            ></Pit>
+                            <Pit :seeds="pit" :index="index + bottomInternalPockets.length + 1"
+                                :lastSelectedPitId="lastSelectedPitId" :ownerPlayerType="settings?.bottomPlayer?.brain.type"
+                                :playingPlayerSide="playingPlayer?.side" :store="false"
+                                @nextActionSelected="nextActionSelected" :side="PlayerSide.BOTTOM"></Pit>
                         </div>
                     </div>
                 </div>
                 <div class="col">
-                    <Pit
-                        :seeds="board[bottomSideStorePit]"
-                        :index="bottomSideStorePit"
-                        :playingPlayerSide="playingPlayer?.side"
-                        :store="true"
-                        :ownerPlayerType="bottomPlayer?.brain.type"
-                        @nextActionSelected="nextActionSelected"
-                        :side="PlayerSide.BOTTOM"
-                    >
+                    <Pit :seeds="board[bottomSideStorePit]" :index="bottomSideStorePit"
+                        :playingPlayerSide="playingPlayer?.side" :store="true"
+                        :ownerPlayerType="settings?.bottomPlayer?.brain.type" @nextActionSelected="nextActionSelected"
+                        :side="PlayerSide.BOTTOM">
                     </Pit>
                 </div>
             </div>
@@ -71,19 +48,22 @@
 <script lang="ts">
 import { createBoard, type BoardConfig } from '@/engine/BoardConfig'
 import { MancalaEngine, type EndGameResult, type MoveRequest, type MoveResult } from '@/engine/MancalaEngine'
+import { StaticBoardAnalyser } from '@/engine/StaticBoardAnalyser'
+import type { GameSettings } from '@/GameSettings'
 import { Player } from '@/engine/player/Player'
 import { PlayerSide } from '@/engine/player/PlayerSide'
 import { PlayerType } from '@/engine/player/PlayerType'
 import Pit from './Pit.vue'
-import { BoardPrinter } from '@/engine/BoardPrinter'
-import { StaticBoardAnalyser } from '@/engine/StaticBoardAnalyser'
-import { PlayerMovesAnalyser } from '@/engine/PlayerMovesAnalyser'
+import type { PropType } from 'vue'
 
 let engine: MancalaEngine
 
 export default {
     name: 'Board',
-    props: ['internalPockets', 'initialStones', 'topPlayer', 'bottomPlayer', 'animationSpeed', 'gameIsRunning'],
+    props: {
+        settings: Object as PropType<GameSettings>,
+        gameIsRunning: Boolean
+    },
     components: {
         Pit,
     },
@@ -106,10 +86,12 @@ export default {
     },
     watch: {
         gameIsRunning() {
-            if (this.gameIsRunning) {
-                this.playingPlayer = this.topPlayer
+            if (this.gameIsRunning && this.settings) {
+                console.log(this.settings)
 
-                this.board = createBoard(this.internalPockets, this.initialStones)
+                this.playingPlayer = this.settings.topPlayer
+
+                this.board = createBoard(this.settings.internalPockets, this.settings.seeds)
                 engine = new MancalaEngine(this.board, {
                     recordMoves: true,
                 })
@@ -209,7 +191,7 @@ export default {
                     return
                 }
                 this.board[move.pitId] = move.seeds
-                await this.sleep(this.animationSpeed)
+                await this.sleep(this.settings?.animationDelay || 100)
                 --this.accumulator
             }
             this.finishUpdatingBoard(result)
@@ -232,10 +214,10 @@ export default {
             }
         },
         getBrainFromSide(side: PlayerSide): Player {
-            if (this.topPlayer.side === side) {
-                return this.topPlayer as Player
+            if (this.settings?.topPlayer.side === side) {
+                return this.settings?.topPlayer as Player
             } else {
-                return this.bottomPlayer as Player
+                return this.settings?.bottomPlayer as Player
             }
         },
     },

@@ -1,21 +1,8 @@
 <template>
     <main>
-        <NavBar
-            :gameIsRunning="gameIsRunning"
-            @startGame="startGame"
-            @abortGame="abortGame"
-            :animationSpeed="animationSpeed"
-            @animationSpeedChanged="animationSpeedChanged"
-        ></NavBar>
-        <Board
-            :gameIsRunning="gameIsRunning"
-            :internalPockets="internalPockets"
-            :initialStones="initialStones"
-            :topPlayer="topPlayer"
-            :bottomPlayer="bottomPlayer"
-            :animationSpeed="animationSpeed"
-            @gameOver="gameOver"
-        />
+        <NavBar :gameIsRunning="gameIsRunning" @startGame="startGame" @abortGame="abortGame"
+            @settingsChanged="settingsChanged"></NavBar>
+        <Board :gameIsRunning="gameIsRunning" :settings="settings" @gameOver="gameOver" />
         <GameOver :result="gameOverResult" @modalIsGone="gameOverModalIsGone"></GameOver>
     </main>
 </template>
@@ -25,7 +12,7 @@ import Board from '@/components/Board.vue'
 import GameOver from '@/components/GameOver.vue'
 import NavBar from './components/NavBar.vue'
 import type { EndGameResult } from './engine/MancalaEngine'
-import { Player } from './engine/player/Player'
+import type { GameSettings } from './GameSettings'
 
 export default {
     name: 'App',
@@ -38,11 +25,7 @@ export default {
         return {
             gameOverResult: undefined as undefined | EndGameResult,
             gameIsRunning: false,
-            internalPockets: 6,
-            initialStones: 4,
-            animationSpeed: 500,
-            topPlayer: undefined as Player | undefined,
-            bottomPlayer: undefined as Player | undefined,
+            settings: undefined as GameSettings | undefined
         }
     },
     methods: {
@@ -52,19 +35,15 @@ export default {
         gameOverModalIsGone() {
             this.gameIsRunning = false
         },
-        startGame(settings: { topPlayer: Player; bottomPlayer: Player; animationSpeed: number }) {
+        startGame() {
             this.gameIsRunning = true
-            this.topPlayer = settings.topPlayer
-            this.bottomPlayer = settings.bottomPlayer
-            this.animationSpeed = settings.animationSpeed
         },
         abortGame() {
             this.gameIsRunning = false
-            this.topPlayer = undefined
-            this.bottomPlayer = undefined
         },
-        animationSpeedChanged(animationSpeed: number) {
-            this.animationSpeed = animationSpeed
+        settingsChanged(settings: GameSettings) {
+            console.log(settings)
+            this.settings = settings
         },
     },
 }
