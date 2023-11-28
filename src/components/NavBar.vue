@@ -13,9 +13,8 @@
                     >
                     </BrainSelector>
                 </div>
-                <div class="col-4 col-sm-2 col-lg-auto">
+                <div v-if="!gameIsRunning" class="col-6 col-sm-3 col-lg-2">
                     <Counter
-                        :disabled="gameIsRunning"
                         :value="settings.seeds"
                         icon="fa-solid fa-egg"
                         :config="seedsCounter"
@@ -23,9 +22,8 @@
                         @input="(value) => (settings.seeds = value)"
                     />
                 </div>
-                <div class="col-4 col-sm-2 col-lg-auto">
+                <div v-if="!gameIsRunning" class="col-6 col-sm-3 col-lg-2">
                     <Counter
-                        :disabled="gameIsRunning"
                         :value="settings.internalPockets"
                         icon="fa-solid fa-rainbow"
                         flip="vertical"
@@ -34,7 +32,7 @@
                         @input="(value) => (settings.internalPockets = value)"
                     />
                 </div>
-                <div class="col-4 col-sm-2 col-lg-auto">
+                <div v-if="gameIsRunning" class="col-12 col-sm-4 col-lg-3">
                     <Counter
                         :value="settings.animationSpeed"
                         icon="fa-solid fa-bolt"
