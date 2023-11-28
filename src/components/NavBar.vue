@@ -2,7 +2,7 @@
     <nav class="navbar w-100 border-bottom border-body" style="background-color: var(--nav-bar-color)">
         <div class="container-fluid">
             <div class="row w-100 g-1 justify-content-between">
-                <div class="col-12 col-sm-4 col-lg-3" style="text-align: center; white-space: nowrap">
+                <div class="col-12 col-sm-6 col-lg-3" style="text-align: center">
                     <BrainSelector :side="PlayerSide.TOP" :gameIsRunning="gameIsRunning" @brainSelected="brainSelected">
                     </BrainSelector>
                     <img :src="versusIcon" class="img-fluid" alt="versus" style="width: 2.5em !important" />
@@ -13,7 +13,7 @@
                     >
                     </BrainSelector>
                 </div>
-                <div v-if="!gameIsRunning" class="col-6 col-sm-3 col-lg-2">
+                <div v-if="!gameIsRunning" class="col-6 col-sm-2 col-lg-2">
                     <Counter
                         :value="settings.seeds"
                         icon="fa-solid fa-egg"
@@ -22,7 +22,7 @@
                         @input="(value) => (settings.seeds = value)"
                     />
                 </div>
-                <div v-if="!gameIsRunning" class="col-6 col-sm-3 col-lg-2">
+                <div v-if="!gameIsRunning" class="col-6 col-sm-2 col-lg-2">
                     <Counter
                         :value="settings.internalPockets"
                         icon="fa-solid fa-rainbow"
