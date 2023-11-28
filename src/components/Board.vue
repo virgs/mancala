@@ -1,43 +1,66 @@
 <template>
     <div class="container-lg text-center" id="boardContainer">
-        <img src="@/assets/wooden-square-plank.png" class="img-fluid w-100" alt="wooden-square-plank" />
+        <img :src="woodenPlank" class="img-fluid w-100" alt="wooden-square-plank" />
         <span v-if="animationRunning && accumulator >= 0" :class="accumulatorClass" :style="accumulatorStyle">
             <span class="accumulatorNumber number">{{ accumulator }}</span>
         </span>
         <div v-if="aiIsThinking" class="spinner-border" :style="spinningStyle" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
-        <div class="container-fluid px-5 plank-board">
-            <div class="row g-2 h-100">
+        <div class="container-fluid plank-board p-0">
+            <div class="row g-2 h-100 mx-5 pl-3" style="position: relative; left: 1.125rem">
                 <div class="col">
-                    <Pit :seeds="board[topSideStorePit]" :index="topSideStorePit" :playingPlayerSide="playingPlayer?.side"
-                        :store="true" :ownerPlayerType="settings?.topPlayer?.brain.type"
-                        @nextActionSelected="nextActionSelected" :side="PlayerSide.TOP">
+                    <Pit
+                        :seeds="board[topSideStorePit]"
+                        :index="topSideStorePit"
+                        :playingPlayerSide="playingPlayer?.side"
+                        :store="true"
+                        :ownerPlayerType="settings?.topPlayer?.brain.type"
+                        @nextActionSelected="nextActionSelected"
+                        :side="PlayerSide.TOP"
+                    >
                     </Pit>
                 </div>
                 <div class="col-8">
                     <div class="row g-0 justify-content-center" style="height: 50%">
                         <div v-for="(pit, index) in topInternalPockets" class="col mx-auto">
-                            <Pit :seeds="pit" :index="topInternalPockets.length - 1 - index" :store="false"
-                                :lastSelectedPitId="lastSelectedPitId" :ownerPlayerType="settings?.topPlayer?.brain.type"
-                                @nextActionSelected="nextActionSelected" :playingPlayerSide="playingPlayer?.side"
-                                :side="PlayerSide.TOP"></Pit>
+                            <Pit
+                                :seeds="pit"
+                                :index="topInternalPockets.length - 1 - index"
+                                :store="false"
+                                :lastSelectedPitId="lastSelectedPitId"
+                                :ownerPlayerType="settings?.topPlayer?.brain.type"
+                                @nextActionSelected="nextActionSelected"
+                                :playingPlayerSide="playingPlayer?.side"
+                                :side="PlayerSide.TOP"
+                            ></Pit>
                         </div>
                     </div>
                     <div class="row g-0 justify-content-center" style="height: 50%">
                         <div v-for="(pit, index) in bottomInternalPockets" class="col mx-auto">
-                            <Pit :seeds="pit" :index="index + bottomInternalPockets.length + 1"
-                                :lastSelectedPitId="lastSelectedPitId" :ownerPlayerType="settings?.bottomPlayer?.brain.type"
-                                :playingPlayerSide="playingPlayer?.side" :store="false"
-                                @nextActionSelected="nextActionSelected" :side="PlayerSide.BOTTOM"></Pit>
+                            <Pit
+                                :seeds="pit"
+                                :index="index + bottomInternalPockets.length + 1"
+                                :lastSelectedPitId="lastSelectedPitId"
+                                :ownerPlayerType="settings?.bottomPlayer?.brain.type"
+                                :playingPlayerSide="playingPlayer?.side"
+                                :store="false"
+                                @nextActionSelected="nextActionSelected"
+                                :side="PlayerSide.BOTTOM"
+                            ></Pit>
                         </div>
                     </div>
                 </div>
                 <div class="col">
-                    <Pit :seeds="board[bottomSideStorePit]" :index="bottomSideStorePit"
-                        :playingPlayerSide="playingPlayer?.side" :store="true"
-                        :ownerPlayerType="settings?.bottomPlayer?.brain.type" @nextActionSelected="nextActionSelected"
-                        :side="PlayerSide.BOTTOM">
+                    <Pit
+                        :seeds="board[bottomSideStorePit]"
+                        :index="bottomSideStorePit"
+                        :playingPlayerSide="playingPlayer?.side"
+                        :store="true"
+                        :ownerPlayerType="settings?.bottomPlayer?.brain.type"
+                        @nextActionSelected="nextActionSelected"
+                        :side="PlayerSide.BOTTOM"
+                    >
                     </Pit>
                 </div>
             </div>
@@ -56,13 +79,15 @@ import { PlayerType } from '@/engine/player/PlayerType'
 import Pit from './Pit.vue'
 import type { PropType } from 'vue'
 
+import woodenPlank from '@/assets/wooden-square-plank.png'
+
 let engine: MancalaEngine
 
 export default {
     name: 'Board',
     props: {
         settings: Object as PropType<GameSettings>,
-        gameIsRunning: Boolean
+        gameIsRunning: Boolean,
     },
     components: {
         Pit,
@@ -82,15 +107,20 @@ export default {
             animationRunning: false,
             board: createBoard(6, 4) as BoardConfig,
             playingPlayer: undefined as Player | undefined,
+            woodenPlank: woodenPlank,
         }
     },
     watch: {
+        settings() {
+            if (this.settings) {
+                if (!this.gameIsRunning) {
+                    this.board = createBoard(this.settings.internalPockets, this.settings.seeds)
+                }
+            }
+        },
         gameIsRunning() {
             if (this.gameIsRunning && this.settings) {
-                console.log(this.settings)
-
-                this.playingPlayer = this.settings.topPlayer
-
+                this.playingPlayer = this.settings?.topPlayer
                 this.board = createBoard(this.settings.internalPockets, this.settings.seeds)
                 engine = new MancalaEngine(this.board, {
                     recordMoves: true,
@@ -244,7 +274,7 @@ export default {
 .plank-board {
     position: absolute;
     top: 0;
-    left: 10px;
+    left: 0;
     height: 100%;
 }
 

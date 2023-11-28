@@ -1,7 +1,11 @@
 <template>
     <main>
-        <NavBar :gameIsRunning="gameIsRunning" @startGame="startGame" @abortGame="abortGame"
-            @settingsChanged="settingsChanged"></NavBar>
+        <NavBar
+            :gameIsRunning="gameIsRunning"
+            @startGame="startGame"
+            @abortGame="abortGame"
+            @settingsChanged="settingsChanged"
+        ></NavBar>
         <Board :gameIsRunning="gameIsRunning" :settings="settings" @gameOver="gameOver" />
         <GameOver :result="gameOverResult" @modalIsGone="gameOverModalIsGone"></GameOver>
     </main>
@@ -25,7 +29,7 @@ export default {
         return {
             gameOverResult: undefined as undefined | EndGameResult,
             gameIsRunning: false,
-            settings: undefined as GameSettings | undefined
+            settings: undefined as GameSettings | undefined,
         }
     },
     methods: {
