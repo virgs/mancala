@@ -1,6 +1,6 @@
 # Mancala
 
-![Mancala-Screenshot](Mancala-Screenshot .png)
+![Mancala-Screenshot](./Mancala-Screenshot.png)
 
 Yet another game-oriented-artificial-intelligence-fun-and-studying-project
 
