@@ -6,21 +6,40 @@
                     <BrainSelector :side="PlayerSide.TOP" :gameIsRunning="gameIsRunning" @brainSelected="brainSelected">
                     </BrainSelector>
                     <img :src="versusIcon" class="img-fluid" alt="versus" style="width: 2.5em !important" />
-                    <BrainSelector :side="PlayerSide.BOTTOM" :gameIsRunning="gameIsRunning" @brainSelected="brainSelected">
+                    <BrainSelector
+                        :side="PlayerSide.BOTTOM"
+                        :gameIsRunning="gameIsRunning"
+                        @brainSelected="brainSelected"
+                    >
                     </BrainSelector>
                 </div>
                 <div v-if="!gameIsRunning" class="col-6 col-sm-2 col-lg-2">
-                    <Counter :value="settings.seeds" icon="fa-solid fa-egg" :config="seedsCounter"
-                        iconColor="var(--wooden-shade)" @input="(value) => (settings.seeds = value)" />
+                    <Counter
+                        :value="settings.seeds"
+                        icon="fa-solid fa-egg"
+                        :config="seedsCounter"
+                        iconColor="var(--wooden-shade)"
+                        @input="(value) => (settings.seeds = value)"
+                    />
                 </div>
                 <div v-if="!gameIsRunning" class="col-6 col-sm-2 col-lg-2">
-                    <Counter :value="settings.internalPockets" icon="fa-solid fa-rainbow" flip="vertical"
-                        :config="pitsCounter" iconColor="var(--wooden-shade)"
-                        @input="(value) => (settings.internalPockets = value)" />
+                    <Counter
+                        :value="settings.internalPockets"
+                        icon="fa-solid fa-rainbow"
+                        flip="vertical"
+                        :config="pitsCounter"
+                        iconColor="var(--wooden-shade)"
+                        @input="(value) => (settings.internalPockets = value)"
+                    />
                 </div>
                 <div v-if="gameIsRunning" class="col-12 col-sm-4 col-lg-3">
-                    <Counter :value="settings.animationSpeed" icon="fa-solid fa-bolt" :config="animationCounter"
-                        iconColor="var(--bolt-color)" @input="(value) => (settings.animationSpeed = value)" />
+                    <Counter
+                        :value="settings.animationSpeed"
+                        icon="fa-solid fa-bolt"
+                        :config="animationCounter"
+                        iconColor="var(--bolt-color)"
+                        @input="(value) => (settings.animationSpeed = value)"
+                    />
                 </div>
                 <div class="col-12 col-sm-2 col-lg-3 d-flex justify-content-end">
                     <button v-if="gameIsRunning" @click="stopGame" class="btn btn-sm btn-danger">

@@ -1,7 +1,13 @@
 <template>
     <span class="dropdown">
-        <button :disabled="gameIsRunning" class="btn btn-sm dropdown-toggle text" type="button" data-bs-toggle="dropdown"
-            aria-expanded="false" :style="labelText">
+        <button
+            :disabled="gameIsRunning"
+            class="btn btn-sm dropdown-toggle text"
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            :style="labelText"
+        >
             <font-awesome-icon :icon="'fa-solid ' + currentBrainIcon" style="margin: 0 7px; border: none" />
             <span>{{ currentBrainLabel }}</span>
         </button>
