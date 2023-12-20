@@ -85,7 +85,7 @@ const pitsCounter: CounterData = {
 const defaultSettings = {
     internalPockets: 6,
     seeds: 4,
-    animationSpeed: 500,
+    animationSpeed: 1000,
     topPlayer: new Player(PlayerSide.TOP, new HumanBrain()),
     bottomPlayer: new Player(PlayerSide.BOTTOM, new HumanBrain()),
 }

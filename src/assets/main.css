@@ -1,5 +1,9 @@
 @import './base.css';
 
+body {
+    touch-action: none;
+}
+
 #app {
     user-select: none;
 }
