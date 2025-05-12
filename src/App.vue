@@ -1,17 +1,15 @@
 <template>
     <main>
-        <NavBar
-            :gameIsRunning="gameIsRunning"
-            @startGame="startGame"
-            @abortGame="abortGame"
-            @settingsChanged="settingsChanged"
-        ></NavBar>
+        <NavBar :gameIsRunning="gameIsRunning" @startGame="startGame" @abortGame="abortGame"
+            @settingsChanged="settingsChanged"></NavBar>
         <Board :gameIsRunning="gameIsRunning" :settings="settings" @gameOver="gameOver" />
         <GameOver :result="gameOverResult" @modalIsGone="gameOverModalIsGone"></GameOver>
+        <GithubCorner></GithubCorner> 
     </main>
 </template>
 
 <script lang="ts">
+import GithubCorner from '@/components/GithubCorner.vue'
 import Board from '@/components/Board.vue'
 import GameOver from '@/components/GameOver.vue'
 import NavBar from './components/NavBar.vue'
@@ -24,6 +22,7 @@ export default {
         NavBar,
         Board,
         GameOver,
+        GithubCorner,
     },
     data() {
         return {
